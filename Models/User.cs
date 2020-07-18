@@ -1,0 +1,34 @@
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+
+namespace MeshBackend.Models
+{
+    public class User
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
+        
+        [Required]
+        [MaxLength(50)]
+        public string Nickname { get; set; }
+        
+        [Required]
+        [MaxLength(50)]
+        public string Email { get; set; }
+        
+        [MaxLength(70)]
+        public string PasswordDigest { get; set; }
+        
+        [MaxLength(70)]
+        public string RememberDigest { get; set; }
+        
+        public List<Cooperation>Cooperations { get; set; }
+        
+        public List<Assign>Assigns { get; set; }
+        
+    }
+}

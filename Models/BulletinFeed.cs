@@ -4,23 +4,24 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MeshBackend.Models
 {
-    public class Assign
+    public class BulletinFeed
     {
-        public int TaskId { get; set; }
+        [Key]
+        public int BulletinId { get; set; }
+        
+        [ForeignKey("BulletinId")]
+        public Bulletin Bulletin { get; set; }
 
-        public string Title { get; set; }
-        
-        public Task Task { get; set; }
-        
-        public int UserId { get; set; }
-        
-        public User User { get; set; }
-        
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime CreatedTime { get; set; }
         
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime UpdatedTime { get; set; }
         
+        public int UserId { get; set; }
+        
+        [ForeignKey("UserId")]
+        public User User { get; set; }
+
     }
 }

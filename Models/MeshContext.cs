@@ -23,11 +23,23 @@ namespace MeshBackend.Models
         
         public DbSet<Cooperation>Cooperations { get; set; }
         
-        public DbSet<Feed>Feeds { get; set; }
+        public DbSet<TaskFeed>TaskFeeds { get; set; }
         
         public DbSet<TaskBoard>TaskBoards { get; set; }
         
         public DbSet<TaskTag>TaskTags { get; set; }
+        
+        public DbSet<BulletinFeed>BulletinFeeds { get; set; }
+        
+        public DbSet<ProjectMemoCollection>ProjectMemoCollections { get; set; }
+        
+        public DbSet<ProjectMemo>ProjectMemos { get; set; }
+        
+        public DbSet<TeamMemoCollection>TeamMemoCollections { get; set; }
+        
+        public DbSet<TeamMemo>TeamMemos { get; set; }
+        
+        public DbSet<Admin>Admins { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -42,7 +54,7 @@ namespace MeshBackend.Models
                 .HasForeignKey(c => c.TaskId);
             modelBuilder.Entity<TaskTag>()
                 .Property(b => b.tag)
-                .HasMaxLength(50);
+                .HasMaxLength(20);
 
             //Subtask
             modelBuilder.Entity<Subtask>()
@@ -54,7 +66,11 @@ namespace MeshBackend.Models
             modelBuilder.Entity<Subtask>()
                 .Property(b => b.Finished)
                 .HasDefaultValue(false);
+            modelBuilder.Entity<Subtask>()
+                .Property(b => b.Title)
+                .HasMaxLength(50);
             
+
             //Cooperation
             modelBuilder.Entity<Cooperation>()
                 .HasKey(c => new {c.UserId, c.TeamId});

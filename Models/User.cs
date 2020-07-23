@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
@@ -26,9 +28,19 @@ namespace MeshBackend.Models
         [MaxLength(70)]
         public string RememberDigest { get; set; }
         
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public DateTime CreatedTime { get; set; }
+        
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public DateTime UpdatedTime { get; set; }
+        
         public List<Cooperation>Cooperations { get; set; }
         
+        public List<Task>Tasks { get; set; }
         public List<Assign>Assigns { get; set; }
         
+        public TeamMemo TeamMemo { get; set; }
+        
+        public ProjectMemo ProjectMemo { get; set; }
     }
 }

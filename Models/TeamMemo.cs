@@ -4,25 +4,32 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MeshBackend.Models
 {
-    public class Subtask
+    public class TeamMemo
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
+        
+        [MaxLength(50)]
         [Required]
         public string Title { get; set; }
         
         [MaxLength(100)]
-        public string Description { get; set; }
-        
-        public bool Finished { get; set; }
-        
-        public int TaskId { get; set; }
+        public string Text { get; set; }
         
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime CreatedTime { get; set; }
+
+        public int UserId { get; set; }
         
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime UpdatedTime { get; set; }
         
-        public Task Task { get; set; }
+        public int CollectionId { get; set; }
         
+        public TeamMemoCollection TeamMemoCollection { get; set; }
+        
+        public User User { get; set; }
+
     }
 }

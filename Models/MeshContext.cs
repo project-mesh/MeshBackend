@@ -5,6 +5,10 @@ namespace MeshBackend.Models
 {
     public class MeshContext : DbContext
     {
+        public MeshContext(DbContextOptions<MeshContext> options) : base(options)
+        {
+        }
+
         public DbSet<User>Users { get; set; }
         
         public DbSet<Team>Teams { get; set; }

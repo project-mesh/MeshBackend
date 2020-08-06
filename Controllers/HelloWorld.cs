@@ -6,7 +6,7 @@ namespace MeshBackend.Controllers
     [ApiController]
     [Route("HelloWorld")]
     [Produces("application/json")]
-    public class HelloWorld:Controller
+    public class HelloWorld : Controller
     {
         private readonly ILogger<HelloWorld> _logger;
 
@@ -15,29 +15,16 @@ namespace MeshBackend.Controllers
             _logger = logger;
         }
 
-        public class Result
-        {
-            public string Description { get; set; }
-        }
-        
-        [HttpPost]
-        public JsonResult Post1599655068(string text)
-        {
-            var result = new Result()
-            {
-                Description = text
-            };
-            return Json(result);
-        }
-        
         [HttpGet]
         public JsonResult Get()
         {
-            var result = new Result()
-            {
-                Description = "Project Mesh Web API"
-            };
-            return Json(result);
+            return Json(new { text = "Project Mesh Web API" });
+        }
+
+        [HttpPost]
+        public JsonResult Post(string text)
+        {
+            return Json(new { text = text });
         }
     }
 }

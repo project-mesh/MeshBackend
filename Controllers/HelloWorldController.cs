@@ -6,11 +6,11 @@ namespace MeshBackend.Controllers
     [ApiController]
     [Route("HelloWorld")]
     [Produces("application/json")]
-    public class HelloWorld : Controller
+    public class HelloWorldController : Controller
     {
-        private readonly ILogger<HelloWorld> _logger;
+        private readonly ILogger<HelloWorldController> _logger;
 
-        public HelloWorld(ILogger<HelloWorld> logger)
+        public HelloWorldController(ILogger<HelloWorldController> logger)
         {
             _logger = logger;
         }

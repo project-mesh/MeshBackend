@@ -26,5 +26,5 @@ steps:
   displayName: "Test"
   inputs:
     command: test
-    projects: '**/*.Tests/*.csproj'
+    projects: 'MeshBackend.csproj'
     arguments: '--configuration $(buildConfiguration)'

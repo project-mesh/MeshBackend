@@ -30,6 +30,13 @@ namespace MeshBackend
         {
             services.AddDbContext<MeshContext>(options =>
                 options.UseMySQL(Configuration.GetConnectionString("Dev")));
+            services.AddDistributedMemoryCache();
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(15);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
             services.AddControllers();
         }
 
@@ -47,6 +54,8 @@ namespace MeshBackend
 
             app.UseAuthorization();
 
+            app.UseSession();
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

@@ -23,6 +23,9 @@ namespace MeshBackend.Models
         public string PasswordDigest { get; set; }
         
         [MaxLength(70)]
+        public string PasswordSalt { get; set; }
+        
+        [MaxLength(70)]
         public string RememberDigest { get; set; }
         
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using MeshBackend.Helpers;
 using MeshBackend.Models;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Http;
@@ -26,9 +27,9 @@ namespace MeshBackend.Controllers
             _meshContext = meshContext;
         }
 
-        public bool CheckUserSession(int id)
+        public bool CheckUserSession(string username)
         {
-            if (HttpContext.Session.IsAvailable && HttpContext.Session.GetString(id.ToString()) != null)
+            if (HttpContext.Session.IsAvailable && HttpContext.Session.GetString(username) != null)
             {
                 return true;
             }
@@ -36,7 +37,7 @@ namespace MeshBackend.Controllers
             {
                 if (HttpContext.Session.IsAvailable)
                 {
-                    HttpContext.Session.SetString(id.ToString(),"");
+                    HttpContext.Session.SetString(username,"");
                 }
                 return false;
             }
@@ -84,22 +85,7 @@ namespace MeshBackend.Controllers
             public int TeamId { get; set; }
             public int AdminId { get; set; }
         }
-
-        public class Data
-        {
-            public bool IsSuccess { get; set; }
-            public string Msg { get; set; }
-            public string Username { get; set; }
-            public string Role { get; set; }
-            public string Token { get; set; }
-            public List<TeamInfo> Teams { get; set; }
-        }
-
-        public class ReturnValue
-        {
-            public int err_code { get; set; }
-            public Data Data { get; set; }
-        }
+        
 
         public class HashPassword
         {
@@ -113,16 +99,7 @@ namespace MeshBackend.Controllers
         {
             if (username==null || username.Length > 50)
             {
-                return Json(new ReturnValue()
-                    {
-                        err_code = 104,
-                        Data = new Data()
-                        {
-                            IsSuccess = false, 
-                            Msg = "Invalid username."
-                        }
-                    }
-                );
+                return JsonReturn.ErrorReturn(104, "Invalid username");
             }
             
             var user = _meshContext.Users.FirstOrDefault(u => u.Email == username);
@@ -144,39 +121,23 @@ namespace MeshBackend.Controllers
                 catch (Exception e)
                 {
                     _logger.LogError(e.ToString());
-                    return Json(new ReturnValue()
-                    {
-                        err_code = 1,
-                        Data = new Data()
-                        {
-                            IsSuccess = false,
-                            Msg = "Unexpected error."
-                        }
-                    });
+                    return JsonReturn.ErrorReturn(1, "Unexpected error.");
                 }
 
-                return Json(new ReturnValue()
+                return Json(new 
                 {
                     err_code = 0,
-                    Data = new Data()
+                    data = new 
                     {
-                        IsSuccess = true,
-                        Username = username,
-                        Role = "user",
+                        isSuccess = true,
+                        username = username,
+                        role = "user",
                     },
                 });
             }
             else
             {
-                return Json(new ReturnValue()
-                {
-                    err_code = 101,
-                    Data = new Data()
-                    {
-                        IsSuccess = false,
-                        Msg = "User already exists."
-                    }
-                });
+                return JsonReturn.ErrorReturn(101, "User already exists.");
             }
         }
 
@@ -187,32 +148,15 @@ namespace MeshBackend.Controllers
         {
             if (username == null || username.Length > 50)
             {
-                return Json(new ReturnValue()
-                    {
-                        err_code = 204,
-                        Data = new Data()
-                        {
-                            IsSuccess = false, 
-                            Msg = "Invalid username."
-                        }
-                    }
-                );
+                return JsonReturn.ErrorReturn(104, "Invalid username");
             }
             
             var user = _meshContext.Users.FirstOrDefault(u => u.Email == username);
             if (user != null && CheckHashPassword(password, user.PasswordSalt,user.PasswordDigest))
             {
-                if (CheckUserSession(user.Id))
+                if (CheckUserSession(user.Nickname))
                 {
-                    return Json(new ReturnValue()
-                    {
-                        err_code = 203,
-                        Data = new Data()
-                        {
-                            IsSuccess = false,
-                            Msg = "User has already logged in."
-                        }
-                    });
+                    return JsonReturn.ErrorReturn(203, "User has already logged in.");
                 }
                     
                 var cooperation = _meshContext.Cooperations
@@ -226,31 +170,22 @@ namespace MeshBackend.Controllers
                             AdminId = t.AdminId
                         }).ToList();
                     
-                return Json(new ReturnValue()
+                return Json(new
                 {
                     err_code = 0,
-                    Data = new Data()
+                    data = new
                     {
-                        IsSuccess = true,
-                        Msg = "",
-                        Username = username,
-                        Role = "user",
-                        Token = "",
-                        Teams = teams
+                        isSuccess = true,
+                        username = username,
+                        role = "user",
+                        token = "",
+                        teams = teams
                     },
                 });
             }
             else
             {
-                return Json(new ReturnValue()
-                {
-                    err_code = 201,
-                    Data = new Data()
-                    {
-                        IsSuccess = false,
-                        Msg = "Incorrect username or password."
-                    }
-                });
+                return JsonReturn.ErrorReturn(201, "Incorrect username or password.");
             }
         }
 

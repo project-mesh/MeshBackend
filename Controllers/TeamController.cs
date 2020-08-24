@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using MeshBackend.Helpers;
 using Google.Protobuf.WellKnownTypes;
@@ -41,11 +42,11 @@ namespace MeshBackend.Controllers
         {
             if (username == null || username.Length > 50)
             {
-                return JsonReturn.ErrorReturn(104, "Invalid username.");
+                return JsonReturnHelper.ErrorReturn(104, "Invalid username.");
             }
             if (HttpContext.Session.GetString(username) == null)
             {
-                return JsonReturn.ErrorReturn(2, "User status error.");
+                return JsonReturnHelper.ErrorReturn(2, "User status error.");
             }
 
             return null;
@@ -59,9 +60,11 @@ namespace MeshBackend.Controllers
             {
                 return checkResult;
             }
+            
             var team = _meshContext.Teams.FirstOrDefault(t => t.Id == teamId);
             if (team != null)
             {
+                //Find team members
                 var teamCooperation = _meshContext.Cooperations
                     .Where(c => c.TeamId == team.Id);
                 var adminName = _meshContext.Users.First(u => u.Id == team.AdminId).Nickname;
@@ -73,6 +76,7 @@ namespace MeshBackend.Controllers
                             Username = u.Nickname
                         }).ToList();
 
+                //Find projects of the team
                 var project = _meshContext.Projects
                     .Where(p => p.TeamId == teamId);
                 var teamProjects = _meshContext.Users
@@ -105,7 +109,7 @@ namespace MeshBackend.Controllers
             }
             else
             {
-                return JsonReturn.ErrorReturn(302, "Invalid teamId.");
+                return JsonReturnHelper.ErrorReturn(302, "Invalid teamId.");
             }
         }
 
@@ -122,38 +126,39 @@ namespace MeshBackend.Controllers
             var team = _meshContext.Teams.FirstOrDefault(t => t.Name == teamName);
             if (team != null)
             {
-                return JsonReturn.ErrorReturn(301, "TeamName already exists.");
+                return JsonReturnHelper.ErrorReturn(301, "TeamName already exists.");
             }
-            
-            var createdTeam = new Team();
 
             var user = _meshContext.Users.First(u => u.Nickname == username);
+            var createdTeam = new Team()
+            {
+                Name = teamName,
+                AdminId = user.Id
+            };
+            
+            //Start transaction to save the new team
             using (var transaction = _meshContext.Database.BeginTransaction())
             {
                 try
                 {
-                    _meshContext.Teams.Add(new Team()
-                    {
-                        Name = teamName,
-                        AdminId = user.Id
-                    });
+                    _meshContext.Teams.Add(createdTeam);
                     _meshContext.SaveChanges();
-                    var newTeam = _meshContext.Teams.First(t => t.Name == teamName);
                     _meshContext.Cooperations.Add(new Cooperation()
                     {
-                        TeamId = newTeam.Id,
+                        TeamId = createdTeam.Id,
                         UserId = user.Id
                     });
+                    _meshContext.SaveChanges();
                     transaction.Commit();
-                    createdTeam = newTeam;
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e.ToString());
-                    return JsonReturn.ErrorReturn(1, "Unexpected error.");
+                    return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
                 }
             }
-
+            
+            //Return team members
             var teamMembers = new List<Member>();
             teamMembers.Add(new Member(){Username = user.Nickname,Id = user.Id});
             return Json(new 
@@ -165,7 +170,7 @@ namespace MeshBackend.Controllers
                         team = new 
                         {
                             teamId = createdTeam.Id,
-                            createTime = createdTeam.CreatedTime.ToString(),
+                            createTime = createdTeam.CreatedTime,
                             teamName = createdTeam.Name,
                             adminName = user.Nickname,
                             members = teamMembers
@@ -188,26 +193,27 @@ namespace MeshBackend.Controllers
 
             if (inviteName == null || inviteName.Length > 50)
             {
-                return JsonReturn.ErrorReturn(108, "Invalid inviteName");
+                return JsonReturnHelper.ErrorReturn(108, "Invalid inviteName");
             }
             
             var team = _meshContext.Teams.FirstOrDefault(t => t.Id == teamId);
             if (team == null)
             {
-                return JsonReturn.ErrorReturn(302, "Team not exist.");
+                return JsonReturnHelper.ErrorReturn(302, "Team not exist.");
             }
             
-            var user = _meshContext.Users.FirstOrDefault(u => u.Nickname == inviteName);
-            if (user != null)
+            var user = _meshContext.Users.FirstOrDefault(u => u.Nickname == username);
+            var inviteUser = _meshContext.Users.FirstOrDefault(u => u.Nickname == inviteName);
+            if (user != null&& inviteUser!=null)
             {
                 if (user.Id != team.AdminId)
                 {
-                    return JsonReturn.ErrorReturn(305, "Permission error ");
+                    return JsonReturnHelper.ErrorReturn(305, "Permission error ");
                 }
                 var cooperation = new Cooperation()
                 {
                     TeamId = teamId,
-                    UserId = user.Id
+                    UserId = inviteUser.Id
                 };
                 try
                 {
@@ -217,22 +223,14 @@ namespace MeshBackend.Controllers
                 catch (Exception e)
                 {
                     _logger.LogError(e.ToString());
-                    return JsonReturn.ErrorReturn(1, "Unexpected error.");
+                    return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
                 }
 
-                return Json(new
-                {
-                    err_code = 0,
-                    data = new
-                    {
-                        isSuccess = true,
-                        msg = ""
-                    }
-                });
+                return JsonReturnHelper.SuccessReturn();
             }
             else
             {
-                return JsonReturn.ErrorReturn(108, "Username or inviteName not exists.");
+                return JsonReturnHelper.ErrorReturn(108, "Username or inviteName not exists.");
             }
         }
         

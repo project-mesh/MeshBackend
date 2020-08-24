@@ -99,13 +99,14 @@ namespace MeshBackend.Controllers
         {
             if (username==null || username.Length > 50)
             {
-                return JsonReturn.ErrorReturn(104, "Invalid username");
+                return JsonReturnHelper.ErrorReturn(104, "Invalid username");
             }
             
             var user = _meshContext.Users.FirstOrDefault(u => u.Email == username);
             if (user == null)
             {
                 HashPassword hashPassword = GetHashPassword(password);
+                //Create new user
                 var newUser = new User()
                 {
                     Email = username,
@@ -113,6 +114,7 @@ namespace MeshBackend.Controllers
                     PasswordDigest = hashPassword.PasswordDigest,
                     PasswordSalt = hashPassword.PasswordSalt
                 };
+                //try to save the user
                 try
                 {
                     _meshContext.Users.Add(newUser);
@@ -121,7 +123,7 @@ namespace MeshBackend.Controllers
                 catch (Exception e)
                 {
                     _logger.LogError(e.ToString());
-                    return JsonReturn.ErrorReturn(1, "Unexpected error.");
+                    return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
                 }
 
                 return Json(new 
@@ -137,7 +139,7 @@ namespace MeshBackend.Controllers
             }
             else
             {
-                return JsonReturn.ErrorReturn(101, "User already exists.");
+                return JsonReturnHelper.ErrorReturn(101, "User already exists.");
             }
         }
 
@@ -148,17 +150,19 @@ namespace MeshBackend.Controllers
         {
             if (username == null || username.Length > 50)
             {
-                return JsonReturn.ErrorReturn(104, "Invalid username");
+                return JsonReturnHelper.ErrorReturn(104, "Invalid username");
             }
             
             var user = _meshContext.Users.FirstOrDefault(u => u.Email == username);
+            //Check Password
             if (user != null && CheckHashPassword(password, user.PasswordSalt,user.PasswordDigest))
             {
                 if (CheckUserSession(user.Nickname))
                 {
-                    return JsonReturn.ErrorReturn(203, "User has already logged in.");
+                    return JsonReturnHelper.ErrorReturn(203, "User has already logged in.");
                 }
-                    
+                
+                //Find teams of the user
                 var cooperation = _meshContext.Cooperations
                     .Where(b => b.UserId == user.Id);
                 var teams = _meshContext.Teams
@@ -185,7 +189,7 @@ namespace MeshBackend.Controllers
             }
             else
             {
-                return JsonReturn.ErrorReturn(201, "Incorrect username or password.");
+                return JsonReturnHelper.ErrorReturn(201, "Incorrect username or password.");
             }
         }
 

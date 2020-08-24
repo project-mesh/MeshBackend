@@ -31,6 +31,18 @@ namespace MeshBackend.Models
         [MaxLength(70)]
         public string RememberDigest { get; set; }
         
+        [MaxLength(2048)]
+        public string Avatar { get; set; }
+        
+        [MaxLength(50)]
+        public string ColorPreference { get; set; }
+        
+        [MaxLength(50)]
+        public string LayoutPreference { get; set; }
+        
+        [MaxLength(50)]
+        public string RevealedPreference { get; set; }
+        
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime CreatedTime { get; set; }
         
@@ -45,5 +57,7 @@ namespace MeshBackend.Models
         public TeamMemo TeamMemo { get; set; }
         
         public ProjectMemo ProjectMemo { get; set; }
+        
+        public List<Develop> Develops { get; set; }
     }
 }

@@ -1,26 +1,23 @@
 using System;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MeshBackend.Models
 {
-    public class Cooperation
+    public class Develop
     {
         public int UserId { get; set; }
+        
         public User User { get; set; }
         
-        public int TeamId { get; set; }
-        public Team Team { get; set; }
+        public int ProjectId { get; set; }
         
-        [DefaultValue(0)]
-        public int AccessCount { get; set; }
+        public Project Project { get; set; }
         
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime CreatedTime { get; set; }
-        
+   
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime UpdatedTime { get; set; }
-        
+
     }
 }

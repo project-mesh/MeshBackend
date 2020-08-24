@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -13,6 +15,12 @@ namespace MeshBackend.Models
         [Required]
         [MaxLength(50)]
         public string Name { get; set; }
+        
+        [DefaultValue(false)]
+        public bool Publicity { get; set; }
+        
+        [MaxLength(2048)]
+        public string Icon { get; set; }
         
         public int TeamId { get; set; }
         
@@ -31,6 +39,8 @@ namespace MeshBackend.Models
         public User User;
 
         public ProjectMemoCollection ProjectMemoCollection { get; set; }
+        
+        public List<Develop>Develops { get; set; }
 
     }
 }

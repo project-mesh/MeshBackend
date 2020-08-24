@@ -44,6 +44,8 @@ namespace MeshBackend.Models
         public DbSet<TeamMemo>TeamMemos { get; set; }
         
         public DbSet<Admin>Admins { get; set; }
+        
+        public DbSet<Develop>Develops { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -101,6 +103,18 @@ namespace MeshBackend.Models
             modelBuilder.Entity<Assign>()
                 .Property(b => b.Title)
                 .HasMaxLength(50);
+            
+            //Develop
+            modelBuilder.Entity<Develop>()
+                .HasKey(d => new {d.UserId, d.ProjectId});
+            modelBuilder.Entity<Develop>()
+                .HasOne(d => d.User)
+                .WithMany(u => u.Develops)
+                .HasForeignKey(d => d.UserId);
+            modelBuilder.Entity<Develop>()
+                .HasOne(d => d.Project)
+                .WithMany(p => p.Develops)
+                .HasForeignKey(d => d.ProjectId);
 
         }
 

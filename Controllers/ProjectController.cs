@@ -166,6 +166,18 @@ namespace MeshBackend.Controllers
                         ProjectId = newProject.Id,
                         UserId = admin.Id
                     });
+                    _meshContext.BulletinBoards.Add(new BulletinBoard()
+                    {
+                        ProjectId = newProject.Id
+                    });
+                    _meshContext.TaskBoards.Add(new TaskBoard()
+                    {
+                        ProjectId = newProject.Id
+                    });
+                    _meshContext.ProjectMemoCollections.Add(new ProjectMemoCollection()
+                    {
+                        ProjectId = newProject.Id
+                    });
                     _meshContext.SaveChanges();
                     transaction.Commit();
                 }

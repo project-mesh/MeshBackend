@@ -148,6 +148,10 @@ namespace MeshBackend.Controllers
                         TeamId = createdTeam.Id,
                         UserId = user.Id
                     });
+                    _meshContext.TeamMemoCollections.Add(new TeamMemoCollection()
+                    {
+                        TeamId = createdTeam.Id
+                    });
                     _meshContext.SaveChanges();
                     transaction.Commit();
                 }

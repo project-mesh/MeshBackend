@@ -52,6 +52,5 @@ namespace MeshBackend.Models
         
         public List<Subtask>Subtasks { get; set; }
         
-        public List<Assign>Assigns { get; set; }
     }
 }

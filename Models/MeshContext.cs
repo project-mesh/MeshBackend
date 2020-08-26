@@ -93,17 +93,14 @@ namespace MeshBackend.Models
             modelBuilder.Entity<Assign>()
                 .HasKey(c => new {c.TaskId, c.Title, c.UserId});
             modelBuilder.Entity<Assign>()
-                .HasOne(t => t.Task)
+                .HasOne(t => t.Subtask)
                 .WithMany(c => c.Assigns)
-                .HasForeignKey(t => t.TaskId);
+                .HasForeignKey(t => new{t.TaskId,t.Title});
             modelBuilder.Entity<Assign>()
                 .HasOne(t => t.User)
                 .WithMany(c => c.Assigns)
                 .HasForeignKey(c => c.UserId);
-            modelBuilder.Entity<Assign>()
-                .Property(b => b.Title)
-                .HasMaxLength(50);
-            
+
             //Develop
             modelBuilder.Entity<Develop>()
                 .HasKey(d => new {d.UserId, d.ProjectId});

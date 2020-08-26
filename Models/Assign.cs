@@ -10,7 +10,7 @@ namespace MeshBackend.Models
 
         public string Title { get; set; }
         
-        public Task Task { get; set; }
+        public Subtask Subtask { get; set; }
         
         public int UserId { get; set; }
         

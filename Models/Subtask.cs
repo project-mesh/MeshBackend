@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -24,5 +25,6 @@ namespace MeshBackend.Models
         
         public Task Task { get; set; }
         
+        public List<Assign>Assigns { get; set; }
     }
 }

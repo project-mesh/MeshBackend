@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using Castle.Core.Internal;
 using MeshBackend.Helpers;
 using MeshBackend.Models;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
@@ -94,7 +95,7 @@ namespace MeshBackend.Controllers
         [Route("register")]
         public JsonResult Register(string username, string password)
         {
-            if (username==null || username.Length > 50)
+            if (username.IsNullOrEmpty() || username.Length > 50)
             {
                 return JsonReturnHelper.ErrorReturn(104, "Invalid username");
             }
@@ -143,7 +144,7 @@ namespace MeshBackend.Controllers
         [Route("login")]
         public JsonResult Login(string username, string password, string token)
         {
-            if (username == null || username.Length > 50)
+            if (username.IsNullOrEmpty() || username.Length > 50)
             {
                 return JsonReturnHelper.ErrorReturn(104, "Invalid username");
             }

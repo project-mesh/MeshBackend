@@ -37,20 +37,20 @@ namespace MeshBackend.Controllers
         
         public JsonResult CheckBulletin(string title, string description)
         {
-            if (title == null || title.Length > 50)
+            if (title.IsNullOrEmpty() || title.Length > 50)
             {
                 return JsonReturnHelper.ErrorReturn(402, "Invalid bulletinName.");
             }
 
-            if (description != null && description.Length > 100)
+            if (description.IsNullOrEmpty() && description.Length > 100)
             {
                 return JsonReturnHelper.ErrorReturn(403, "Description is too long.");
             }
 
             return null;
         }
-        
-        
+
+
         [HttpGet]
         public JsonResult QueryBulletin(string username, int projectId)
         {
@@ -59,37 +59,35 @@ namespace MeshBackend.Controllers
             {
                 return checkUsername;
             }
-            
+
             //Find the target project
             var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
-            if (project != null)
-            {
-                var bulletins = _meshContext.BulletinBoards
-                    .Where(b => b.ProjectId == projectId)
-                    .Join(_meshContext.Bulletins, bb => bb.Id, b => b.BoardId, (bb, b) => new 
-                    {
-                        Id = b.Id,
-                        Name = b.Title,
-                        Content = b.Content,
-                        BoardId = b.BoardId,
-                        CreatedTime = b.CreatedTime
-                    }).ToList();
-                return Json(new
-                {
-                    err_code = 0,
-                    data = new
-                    {
-                        isSuccess = true,
-                        msg = "",
-                        bulletins = bulletins
-                    }
-                });
-            }
-            else
+            if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(401, "Invalid projectId.");
             }
 
+            var bulletins = _meshContext.BulletinBoards
+                .Where(b => b.ProjectId == projectId)
+                .Join(_meshContext.Bulletins, bb => bb.Id, b => b.BoardId, (bb, b) => new
+                {
+                    Id = b.Id,
+                    Name = b.Title,
+                    Content = b.Content,
+                    BoardId = b.BoardId,
+                    CreatedTime = b.CreatedTime
+                }).ToList();
+            return Json(new
+            {
+                err_code = 0,
+                data = new
+                {
+                    isSuccess = true,
+                    msg = "",
+                    bulletins = bulletins
+                }
+            });
+            
         }
 
         [HttpPost]
@@ -256,12 +254,12 @@ namespace MeshBackend.Controllers
 
             try
             {
-                if (bulletinName != null)
+                if (!bulletinName.IsNullOrEmpty())
                 {
                     bulletin.Title = bulletinName;
                 }
 
-                if (description != null)
+                if (!description.IsNullOrEmpty())
                 {
                     bulletin.Content = description;
                 }

@@ -83,12 +83,12 @@ namespace MeshBackend.Controllers
                 return checkResult;
             }
 
-            if (knowledgeName==null||knowledgeName.Length > 50)
+            if (knowledgeName.IsNullOrEmpty()||knowledgeName.Length > 50)
             {
                 return JsonReturnHelper.ErrorReturn(802, "Invalid KnowledgeName.");
             }
 
-            if (hyperlink==null||hyperlink.Length > 100)
+            if (hyperlink.IsNullOrEmpty()||hyperlink.Length > 100)
             {
                 return JsonReturnHelper.ErrorReturn(803, "Invalid hyperlink.");
             }
@@ -145,12 +145,12 @@ namespace MeshBackend.Controllers
                 return checkResult;
             }
 
-            if (knowledgeName==null||knowledgeName.Length > 50)
+            if (knowledgeName.IsNullOrEmpty()||knowledgeName.Length > 50)
             {
                 return JsonReturnHelper.ErrorReturn(802, "Invalid KnowledgeName.");
             }
 
-            if (hyperlink==null||hyperlink.Length > 100)
+            if (hyperlink.IsNullOrEmpty()||hyperlink.Length > 100)
             {
                 return JsonReturnHelper.ErrorReturn(803, "Invalid hyperlink.");
             }

@@ -194,7 +194,7 @@ namespace MeshBackend.Controllers
                 return checkUsernameResult;
             }
 
-            if (inviteName == null || inviteName.Length > 50)
+            if (inviteName.IsNullOrEmpty() || inviteName.Length > 50)
             {
                 return JsonReturnHelper.ErrorReturn(108, "Invalid inviteName");
             }

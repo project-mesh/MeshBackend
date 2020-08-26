@@ -128,7 +128,7 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(301, "TeamName already exists.");
             }
 
-            var user = _meshContext.Users.First(u => u.Nickname == username);
+            var user = _meshContext.Users.First(u => u.Email == username);
             var createdTeam = new Team()
             {
                 Name = teamName,
@@ -163,7 +163,7 @@ namespace MeshBackend.Controllers
             
             //Return team members
             var teamMembers = new List<Member>();
-            teamMembers.Add(new Member(){Username = user.Nickname,Id = user.Id});
+            teamMembers.Add(new Member(){Username = user.Email,Id = user.Id});
             return Json(new 
                 {
                     err_code = 0,
@@ -210,7 +210,7 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(305, "Permission denied.");
             }
 
-            var inviteUser = _meshContext.Users.FirstOrDefault(u => u.Nickname == inviteName);
+            var inviteUser = _meshContext.Users.FirstOrDefault(u => u.Email == inviteName);
             if (inviteUser==null)
             {
                 return JsonReturnHelper.ErrorReturn(108, "Username or inviteName not exists.");

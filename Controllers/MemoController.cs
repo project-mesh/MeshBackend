@@ -93,7 +93,7 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(803, "Invalid hyperlink.");
             }
 
-            var user = _meshContext.Users.First(u => u.Nickname == username);
+            var user = _meshContext.Users.First(u => u.Email == username);
             var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
             if (project == null)
             {
@@ -155,7 +155,7 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(803, "Invalid hyperlink.");
             }
 
-            var user = _meshContext.Users.First(u => u.Nickname == username);
+            var user = _meshContext.Users.First(u => u.Email == username);
             var team = _meshContext.Teams.FirstOrDefault(t => t.Id == teamId);
             if (team == null)
             {
@@ -222,7 +222,7 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(805, "Invalid knowledgeId.");
             }
 
-            var user = _meshContext.Users.First(u => u.Nickname == username);
+            var user = _meshContext.Users.First(u => u.Email == username);
             if (_permissionCheck.CheckProjectPermission(username, project) != PermissionCheckHelper.ProjectAdmin ||
                 knowledge.UserId != user.Id)
             {
@@ -268,7 +268,7 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(805, "Invalid knowledgeId.");
             }
             
-            var user = _meshContext.Users.First(u => u.Nickname == username);
+            var user = _meshContext.Users.First(u => u.Email == username);
             if (_permissionCheck.CheckTeamPermission(username, team) != PermissionCheckHelper.TeamAdmin ||
                 knowledge.UserId != user.Id)
             {
@@ -396,7 +396,7 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(805, "Invalid knowledgeId.");
             }
 
-            var user = _meshContext.Users.First(u => u.Nickname == username);
+            var user = _meshContext.Users.First(u => u.Email == username);
             if (_permissionCheck.CheckProjectPermission(username, project) != PermissionCheckHelper.ProjectAdmin ||
                 knowledge.UserId != user.Id)
             {
@@ -472,7 +472,7 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(805, "Invalid knowledgeId.");
             }
 
-            var user = _meshContext.Users.First(u => u.Nickname == username);
+            var user = _meshContext.Users.First(u => u.Email == username);
             if (_permissionCheck.CheckTeamPermission(username, team) != PermissionCheckHelper.TeamAdmin ||
                 knowledge.UserId != user.Id)
             {

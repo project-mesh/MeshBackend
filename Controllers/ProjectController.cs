@@ -84,10 +84,10 @@ namespace MeshBackend.Controllers
                 return checkResult;
             }
             
-            var user = _meshContext.Users.First(u => u.Nickname == username);
+            var user = _meshContext.Users.First(u => u.Email == username);
             
             //Check if admin exists
-            var admin = _meshContext.Users.FirstOrDefault(a => a.Nickname == adminName);
+            var admin = _meshContext.Users.FirstOrDefault(a => a.Email == adminName);
             if (admin == null)
             {
                 return JsonReturnHelper.ErrorReturn(704, "Invalid adminName.");
@@ -123,7 +123,7 @@ namespace MeshBackend.Controllers
                 Publicity = true,
             };
 
-            var members = new List<MemInfo> {new MemInfo() {UserId = admin.Id, Username = admin.Nickname}};
+            var members = new List<MemInfo> {new MemInfo() {UserId = admin.Id, Username = admin.Email}};
             
             //Start a transaction to save the project
             using (var transaction = _meshContext.Database.BeginTransaction())
@@ -225,7 +225,7 @@ namespace MeshBackend.Controllers
             }
             
             //Check if inviteUser exists
-            var inviteUser = _meshContext.Users.FirstOrDefault(a => a.Nickname == inviteName);
+            var inviteUser = _meshContext.Users.FirstOrDefault(a => a.Email == inviteName);
             if (inviteUser == null)
             {
                 return JsonReturnHelper.ErrorReturn(704, "Invalid adminName.");

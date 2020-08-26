@@ -115,7 +115,7 @@ namespace MeshBackend.Controllers
 
             //Find bulletinBoard of this project
             var bulletinBoard = _meshContext.BulletinBoards.First(b => b.ProjectId == projectId);
-            var user = _meshContext.Users.First(u => u.Nickname == username);
+            var user = _meshContext.Users.First(u => u.Email == username);
             if (_permissionCheck.CheckProjectPermission(username,project)!=PermissionCheckHelper.ProjectAdmin)
             {
                 return JsonReturnHelper.ErrorReturn(421, "Permission denied.");
@@ -194,32 +194,33 @@ namespace MeshBackend.Controllers
             }
             
             //Check if target bulletin exists 
-            var user = _meshContext.Users.First(u => u.Nickname == username);
+            var user = _meshContext.Users.First(u => u.Email == username);
             var bulletin = _meshContext.Bulletins.Find(bulletinId);
             var project = _meshContext.Projects.Find(projectId);
-            if (bulletin != null && project != null)
-            {
-                if (project.AdminId != user.Id)
-                {
-                    return JsonReturnHelper.ErrorReturn(422, "Permission denied.");
-                }
-                try
-                {
-                    _meshContext.Bulletins.Remove(bulletin);
-                    _meshContext.SaveChanges();
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e.ToString());
-                    return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
-                }
-                return JsonReturnHelper.SuccessReturn();
-            }
-            else
+            if (bulletin == null || project == null)
             {
                 return JsonReturnHelper.ErrorReturn(420, "Invalid bulletinId or projectId");
             }
-            
+
+            if (project.AdminId != user.Id)
+            {
+                return JsonReturnHelper.ErrorReturn(422, "Permission denied.");
+            }
+
+            try
+            {
+                _meshContext.Bulletins.Remove(bulletin);
+                _meshContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
+            }
+
+            return JsonReturnHelper.SuccessReturn();
+
+
         }
 
         [HttpPatch]
@@ -231,6 +232,7 @@ namespace MeshBackend.Controllers
             {
                 return checkUsername;
             }
+
             var checkBulletin = CheckBulletin(bulletinName, description);
             if (checkBulletin != null)
             {
@@ -240,47 +242,43 @@ namespace MeshBackend.Controllers
             //Check if target bulletin exists 
             var bulletin = _meshContext.Bulletins.Find(bulletinId);
             var project = _meshContext.Projects.Find(projectId);
-            var user = _meshContext.Users.First(u => u.Nickname == username);
-            if (bulletin != null && project != null)
-            {
-                //Check if the user is admin of the project
-                if (project.AdminId != user.Id)
-                {
-                    return JsonReturnHelper.ErrorReturn(422, "Permission denied.");
-                }
-
-                try
-                {
-                    bulletin.Title = bulletinName;
-                    bulletin.Content = description;
-                    _meshContext.SaveChanges();
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e.ToString());
-                    return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
-                }
-
-                return Json(new
-                {
-                    err_code = 0,
-                    masg = "",
-                    data = new
-                    {
-                        bulletinId = bulletin.Id,
-                        bulletinName = bulletin.Title,
-                        description = bulletin.Content,
-                        createTime = bulletin.CreatedTime
-                    }
-                });
-            }
-            else
+            var user = _meshContext.Users.First(u => u.Email == username);
+            if (bulletin == null || project == null)
             {
                 return JsonReturnHelper.ErrorReturn(420, "Invalid bulletinId or projectId");
-
             }
-            
+
+            //Check if the user is admin of the project
+            if (project.AdminId != user.Id)
+            {
+                return JsonReturnHelper.ErrorReturn(422, "Permission denied.");
+            }
+
+            try
+            {
+                bulletin.Title = bulletinName;
+                bulletin.Content = description;
+                _meshContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
+            }
+
+            return Json(new
+            {
+                err_code = 0,
+                masg = "",
+                data = new
+                {
+                    bulletinId = bulletin.Id,
+                    bulletinName = bulletin.Title,
+                    description = bulletin.Content,
+                    createTime = bulletin.CreatedTime
+                }
+            });
         }
-        
+
     }
 }

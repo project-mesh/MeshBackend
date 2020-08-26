@@ -18,20 +18,14 @@ namespace MeshBackend.Controllers
     [Produces("application/json")]
     public class ProjectController:Controller
     {
-        private const int ProjectOutsider = 0;
-        private const int ProjectMember = 1;
-        private const int ProjectAdmin = 2;
-        private const int TeamOutsider = 0;
-        private const int TeamMember = 1;
-        private const int TeamAdmin = 2;
-        
         private readonly ILogger<ProjectController> _logger;
         private readonly MeshContext _meshContext;
-
+        private readonly PermissionCheckHelper _permissionCheck;
         public ProjectController(ILogger<ProjectController> logger, MeshContext meshContext)
         {
             _logger = logger;
             _meshContext = meshContext;
+            _permissionCheck = new PermissionCheckHelper(meshContext);
         }
         
         public class MemInfo
@@ -40,44 +34,8 @@ namespace MeshBackend.Controllers
             public string Username { get; set; }
         }
         
-        public JsonResult CheckUsername(string username)
-        {
-            if (username == null || username.Length > 50)
-            {
-                return JsonReturnHelper.ErrorReturn(104, "Invalid username.");
-            }
-            if (HttpContext.Session.GetString(username) == null)
-            {
-                return JsonReturnHelper.ErrorReturn(2, "User status error.");
-            }
 
-            return null;
-        }
-
-        public int CheckProjectPermission(string username, Project project)
-        {
-            var user = _meshContext.Users.First(u => u.Nickname == username);
-            var develop = _meshContext.Develops.FirstOrDefault(d => d.ProjectId == project.Id && d.UserId == user.Id);
-            if (develop == null)
-            {
-                return ProjectOutsider;
-            }
-
-            return user.Id == project.AdminId ? ProjectAdmin : ProjectMember;
-        }
-
-        public int CheckTeamPermission(string username, Team team)
-        {
-            var user = _meshContext.Users.First(u => u.Nickname == username);
-            var cooperation = _meshContext.Cooperations.FirstOrDefault(c => c.TeamId == team.Id && c.UserId == user.Id);
-            if (cooperation == null)
-            {
-                return TeamOutsider;
-            }
-
-            return user.Id == team.AdminId ? TeamAdmin : TeamMember;
-        }
-
+        
         public JsonResult ProjectResult(Project project,string name)
         {
             var develops = _meshContext.Develops
@@ -107,7 +65,7 @@ namespace MeshBackend.Controllers
         [HttpPost]
         public JsonResult CreateProject(string username, int teamId, string projectName, string adminName)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = _permissionCheck.CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
@@ -130,15 +88,15 @@ namespace MeshBackend.Controllers
             }
             
             //Check if admin is in the team
-            var teamCheckResult = CheckTeamPermission(adminName, team);
-            if (teamCheckResult ==TeamOutsider)
+            var teamCheckResult = _permissionCheck.CheckTeamPermission(adminName, team);
+            if (teamCheckResult ==PermissionCheckHelper.TeamOutsider)
             {
                 return JsonReturnHelper.ErrorReturn(702, "Invalid admin.");
             }
             
             //Check if user is the admin of the team
-            teamCheckResult = CheckTeamPermission(username, team);
-            if (teamCheckResult != TeamAdmin)
+            teamCheckResult = _permissionCheck.CheckTeamPermission(username, team);
+            if (teamCheckResult != PermissionCheckHelper.TeamAdmin)
             {
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");
 
@@ -194,7 +152,7 @@ namespace MeshBackend.Controllers
         [HttpDelete]
         public JsonResult DeleteProject(string username, int teamId, int projectId)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = _permissionCheck.CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
@@ -215,15 +173,15 @@ namespace MeshBackend.Controllers
             }
             
             //Check if user in the team
-            var teamCheckResult = CheckTeamPermission(username, team);
-            if (teamCheckResult ==TeamOutsider)
+            var teamCheckResult = _permissionCheck.CheckTeamPermission(username, team);
+            if (teamCheckResult ==PermissionCheckHelper.TeamOutsider)
             {
                 return JsonReturnHelper.ErrorReturn(702, "Invalid username.");
             }
             
             //Check if user is the admin of the project
-            var projectCheckResult = CheckProjectPermission(username, project);
-            if (projectCheckResult != ProjectAdmin)
+            var projectCheckResult = _permissionCheck.CheckProjectPermission(username, project);
+            if (projectCheckResult != PermissionCheckHelper.ProjectAdmin)
             {
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");
             }
@@ -247,7 +205,7 @@ namespace MeshBackend.Controllers
         [Route("invite")]
         public JsonResult InviteNewProjectMember(string username, int teamId, int projectId, string inviteName)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = _permissionCheck.CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
@@ -268,15 +226,15 @@ namespace MeshBackend.Controllers
             }
             
             //Check if user in the team
-            var teamUserCheckResult = CheckTeamPermission(username, team);
-            if (teamUserCheckResult ==TeamOutsider)
+            var teamUserCheckResult = _permissionCheck.CheckTeamPermission(username, team);
+            if (teamUserCheckResult ==PermissionCheckHelper.TeamOutsider)
             {
                 return JsonReturnHelper.ErrorReturn(702, "Invalid username.");
             }
             
             //Check if inviteUser in the team
-            var teamCheckResult = CheckTeamPermission(inviteName, team);
-            if (teamCheckResult ==TeamOutsider)
+            var teamCheckResult = _permissionCheck.CheckTeamPermission(inviteName, team);
+            if (teamCheckResult ==PermissionCheckHelper.TeamOutsider)
             {
                 return JsonReturnHelper.ErrorReturn(702, "Invalid inviteName.");
             }
@@ -289,8 +247,8 @@ namespace MeshBackend.Controllers
             }
             
             //Check if user is the admin of the project
-            var projectCheckResult = CheckProjectPermission(username, project);
-            if (projectCheckResult != ProjectAdmin)
+            var projectCheckResult = _permissionCheck.CheckProjectPermission(username, project);
+            if (projectCheckResult != PermissionCheckHelper.ProjectAdmin)
             {
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");
             }
@@ -316,7 +274,7 @@ namespace MeshBackend.Controllers
         [HttpGet]
         public JsonResult QueryProject(string username, int projectId)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = _permissionCheck.CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
@@ -330,8 +288,8 @@ namespace MeshBackend.Controllers
             }
             
             //Check if user is in the project
-            var projectCheckResult = CheckProjectPermission(username, project);
-            if (projectCheckResult == ProjectOutsider)
+            var projectCheckResult = _permissionCheck.CheckProjectPermission(username, project);
+            if (projectCheckResult == PermissionCheckHelper.ProjectOutsider)
             {
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");
             }
@@ -344,7 +302,7 @@ namespace MeshBackend.Controllers
         public JsonResult UpdateProject(string username, int teamId, int projectId, bool isPublic,
             string projectName)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = _permissionCheck.CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
@@ -366,15 +324,15 @@ namespace MeshBackend.Controllers
             }
             
             //Check if user in the team
-            var teamCheckResult = CheckTeamPermission(username, team);
-            if (teamCheckResult ==TeamOutsider)
+            var teamCheckResult = _permissionCheck.CheckTeamPermission(username, team);
+            if (teamCheckResult ==PermissionCheckHelper.TeamOutsider)
             {
                 return JsonReturnHelper.ErrorReturn(702, "Invalid username.");
             }
             
             //Check if user is the admin of the project
-            var projectCheckResult = CheckProjectPermission(username, project);
-            if (projectCheckResult != ProjectAdmin)
+            var projectCheckResult = _permissionCheck.CheckProjectPermission(username, project);
+            if (projectCheckResult != PermissionCheckHelper.ProjectAdmin)
             {
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");
             }

@@ -18,11 +18,13 @@ namespace MeshBackend.Controllers
     {
         private readonly ILogger<TeamController> _logger;
         private readonly MeshContext _meshContext;
+        private readonly PermissionCheckHelper _permissionCheck;
 
         public TeamController(ILogger<TeamController> logger, MeshContext meshContext)
         {
             _logger = logger;
             _meshContext = meshContext;
+            _permissionCheck = new PermissionCheckHelper(meshContext);
         }
 
         public class Member
@@ -37,25 +39,12 @@ namespace MeshBackend.Controllers
             public string ProjectName { get; set; }
             public string AdminName { get; set; }
         }
-
-        public JsonResult CheckUsername(string username)
-        {
-            if (username == null || username.Length > 50)
-            {
-                return JsonReturnHelper.ErrorReturn(104, "Invalid username.");
-            }
-            if (HttpContext.Session.GetString(username) == null)
-            {
-                return JsonReturnHelper.ErrorReturn(2, "User status error.");
-            }
-
-            return null;
-        }
+        
         
         [HttpGet]
         public JsonResult QueryTeam(string username, int teamId)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = _permissionCheck.CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
@@ -117,7 +106,7 @@ namespace MeshBackend.Controllers
         [HttpPost]
         public JsonResult CreateTeam(string username, string teamName)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = _permissionCheck.CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
@@ -189,7 +178,7 @@ namespace MeshBackend.Controllers
         [Route("invite")]
         public JsonResult InviteNewTeamMember(string username, int teamId, string inviteName)
         {
-            var checkUsernameResult = CheckUsername(username);
+            var checkUsernameResult = _permissionCheck.CheckUsername(username);
             if (checkUsernameResult != null)
             {
                 return checkUsernameResult;
@@ -205,37 +194,40 @@ namespace MeshBackend.Controllers
             {
                 return JsonReturnHelper.ErrorReturn(302, "Team not exist.");
             }
-            
-            var user = _meshContext.Users.FirstOrDefault(u => u.Nickname == username);
-            var inviteUser = _meshContext.Users.FirstOrDefault(u => u.Nickname == inviteName);
-            if (user != null&& inviteUser!=null)
-            {
-                if (user.Id != team.AdminId)
-                {
-                    return JsonReturnHelper.ErrorReturn(305, "Permission error ");
-                }
-                var cooperation = new Cooperation()
-                {
-                    TeamId = teamId,
-                    UserId = inviteUser.Id
-                };
-                try
-                {
-                    _meshContext.Cooperations.Add(cooperation);
-                    _meshContext.SaveChanges();
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e.ToString());
-                    return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
-                }
 
-                return JsonReturnHelper.SuccessReturn();
+            if (_permissionCheck.CheckTeamPermission(username, team) != PermissionCheckHelper.TeamAdmin)
+            {
+                return JsonReturnHelper.ErrorReturn(305, "Permission denied.");
             }
-            else
+
+            var inviteUser = _meshContext.Users.FirstOrDefault(u => u.Nickname == inviteName);
+            if (inviteUser==null)
             {
                 return JsonReturnHelper.ErrorReturn(108, "Username or inviteName not exists.");
             }
+
+            if (_permissionCheck.CheckTeamPermission(inviteName, team) != PermissionCheckHelper.TeamOutsider)
+            {
+                return JsonReturnHelper.ErrorReturn(306, "User already in team.");
+            }
+            
+            var cooperation = new Cooperation()
+            {
+                TeamId = teamId,
+                UserId = inviteUser.Id
+            };
+            try
+            {
+                _meshContext.Cooperations.Add(cooperation);
+                _meshContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
+            }
+
+            return JsonReturnHelper.SuccessReturn();
         }
         
     }

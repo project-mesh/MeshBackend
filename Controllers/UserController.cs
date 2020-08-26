@@ -33,14 +33,11 @@ namespace MeshBackend.Controllers
             {
                 return true;
             }
-            else
+            if (HttpContext.Session.IsAvailable)
             {
-                if (HttpContext.Session.IsAvailable)
-                {
-                    HttpContext.Session.SetString(username,"");
-                }
-                return false;
+                HttpContext.Session.SetString(username,"");
             }
+            return false;
         }
 
         public HashPassword GetHashPassword(string password)

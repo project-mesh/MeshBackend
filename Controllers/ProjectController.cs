@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Castle.Core.Internal;
 using Castle.DynamicProxy.Contributors;
 using Google.Protobuf.WellKnownTypes;
 using MeshBackend.Helpers;
@@ -27,6 +28,15 @@ namespace MeshBackend.Controllers
             _meshContext = meshContext;
             _permissionCheck = new PermissionCheckHelper(meshContext);
         }
+        public JsonResult CheckUsername(string username)
+        {
+            if (username.IsNullOrEmpty() || username.Length > 50)
+            {
+                return JsonReturnHelper.ErrorReturn(104, "Invalid username.");
+            }
+            return HttpContext.Session.GetString(username) == null ? JsonReturnHelper.ErrorReturn(2, "User status error.") : null;
+        }
+
         
         public class MemInfo
         {
@@ -49,15 +59,18 @@ namespace MeshBackend.Controllers
             return Json(new
             {
                 err_code = 0,
-                isSuccess = true,
-                msg = "",
-                project = new
+                data = new
                 {
-                    projectId = project.Id,
-                    projectName = project.Name,
-                    adminName = name,
-                    isPublic = project.Publicity,
-                    members = develops
+                    isSuccess = true,
+                    msg = "",
+                    project = new
+                    {
+                        projectId = project.Id,
+                        projectName = project.Name,
+                        adminName = name,
+                        isPublic = project.Publicity,
+                        members = develops
+                    }
                 }
             });
         }
@@ -65,7 +78,7 @@ namespace MeshBackend.Controllers
         [HttpPost]
         public JsonResult CreateProject(string username, int teamId, string projectName, string adminName)
         {
-            var checkResult = _permissionCheck.CheckUsername(username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
@@ -152,7 +165,7 @@ namespace MeshBackend.Controllers
         [HttpDelete]
         public JsonResult DeleteProject(string username, int teamId, int projectId)
         {
-            var checkResult = _permissionCheck.CheckUsername(username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
@@ -205,7 +218,7 @@ namespace MeshBackend.Controllers
         [Route("invite")]
         public JsonResult InviteNewProjectMember(string username, int teamId, int projectId, string inviteName)
         {
-            var checkResult = _permissionCheck.CheckUsername(username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
@@ -274,7 +287,7 @@ namespace MeshBackend.Controllers
         [HttpGet]
         public JsonResult QueryProject(string username, int projectId)
         {
-            var checkResult = _permissionCheck.CheckUsername(username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
@@ -302,7 +315,7 @@ namespace MeshBackend.Controllers
         public JsonResult UpdateProject(string username, int teamId, int projectId, bool isPublic,
             string projectName)
         {
-            var checkResult = _permissionCheck.CheckUsername(username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;

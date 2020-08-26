@@ -27,6 +27,7 @@ namespace MeshBackend.Models
         
         public int CollectionId { get; set; }
         
+        [ForeignKey("CollectionId")]
         public TeamMemoCollection TeamMemoCollection { get; set; }
         
         public User User { get; set; }

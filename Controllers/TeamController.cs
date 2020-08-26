@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Castle.Core.Internal;
 using MeshBackend.Helpers;
 using Google.Protobuf.WellKnownTypes;
 using MeshBackend.Models;
@@ -26,7 +27,7 @@ namespace MeshBackend.Controllers
             _meshContext = meshContext;
             _permissionCheck = new PermissionCheckHelper(meshContext);
         }
-
+        
         public class Member
         {
             public int Id { get; set; }
@@ -40,11 +41,20 @@ namespace MeshBackend.Controllers
             public string AdminName { get; set; }
         }
         
+        public JsonResult CheckUsername(string username)
+        {
+            if (username.IsNullOrEmpty() || username.Length > 50)
+            {
+                return JsonReturnHelper.ErrorReturn(104, "Invalid username.");
+            }
+            return HttpContext.Session.GetString(username) == null ? JsonReturnHelper.ErrorReturn(2, "User status error.") : null;
+        }
+
         
         [HttpGet]
         public JsonResult QueryTeam(string username, int teamId)
         {
-            var checkResult = _permissionCheck.CheckUsername(username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
@@ -106,7 +116,7 @@ namespace MeshBackend.Controllers
         [HttpPost]
         public JsonResult CreateTeam(string username, string teamName)
         {
-            var checkResult = _permissionCheck.CheckUsername(username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
@@ -178,7 +188,7 @@ namespace MeshBackend.Controllers
         [Route("invite")]
         public JsonResult InviteNewTeamMember(string username, int teamId, string inviteName)
         {
-            var checkUsernameResult = _permissionCheck.CheckUsername(username);
+            var checkUsernameResult = CheckUsername(username);
             if (checkUsernameResult != null)
             {
                 return checkUsernameResult;

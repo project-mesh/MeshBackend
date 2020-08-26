@@ -1,11 +1,13 @@
+using System;
 using System.Linq;
+using Castle.Core.Internal;
 using MeshBackend.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MeshBackend.Helpers
 {
-    public class PermissionCheckHelper:Controller
+    public class PermissionCheckHelper
     {
         private readonly MeshContext _meshContext;
         public const int ProjectOutsider = 0;
@@ -15,26 +17,11 @@ namespace MeshBackend.Helpers
         public const int TeamMember = 1;
         public const int TeamAdmin = 2;
 
-
         public PermissionCheckHelper(MeshContext meshContext)
         {
             _meshContext = meshContext;
         }
-        
-        public JsonResult CheckUsername(string username)
-        {
-            if (username == null || username.Length > 50)
-            {
-                return JsonReturnHelper.ErrorReturn(104, "Invalid username.");
-            }
-            if (HttpContext.Session.GetString(username) == null)
-            {
-                return JsonReturnHelper.ErrorReturn(2, "User status error.");
-            }
 
-            return null;
-        }
-        
         public int CheckProjectPermission(string username, Project project)
         {
             var user = _meshContext.Users.First(u => u.Nickname == username);

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Castle.Core.Internal;
 using MeshBackend.Helpers;
 using MeshBackend.Models;
 using Microsoft.AspNetCore.Http;
@@ -25,7 +26,15 @@ namespace MeshBackend.Controllers
             _permissionCheck = new PermissionCheckHelper(meshContext);
         }
         
-
+        public JsonResult CheckUsername(string username)
+        {
+            if (username.IsNullOrEmpty() || username.Length > 50)
+            {
+                return JsonReturnHelper.ErrorReturn(104, "Invalid username.");
+            }
+            return HttpContext.Session.GetString(username) == null ? JsonReturnHelper.ErrorReturn(2, "User status error.") : null;
+        }
+        
         public JsonResult CheckBulletin(string title, string description)
         {
             if (title == null || title.Length > 50)
@@ -45,7 +54,7 @@ namespace MeshBackend.Controllers
         [HttpGet]
         public JsonResult QueryBulletin(string username, int projectId)
         {
-            var checkUsername = _permissionCheck.CheckUsername(username);
+            var checkUsername = CheckUsername(username);
             if (checkUsername != null)
             {
                 return checkUsername;
@@ -86,7 +95,7 @@ namespace MeshBackend.Controllers
         [HttpPost]
         public JsonResult CreateBulletin(string username, int projectId, string bulletinName, string description)
         {
-            var checkUsername = _permissionCheck.CheckUsername(username);
+            var checkUsername = CheckUsername(username);
             if (checkUsername != null)
             {
                 return checkUsername;
@@ -178,7 +187,7 @@ namespace MeshBackend.Controllers
         [HttpDelete]
         public JsonResult DeleteBulletin(int bulletinId, string username, int projectId)
         {
-            var checkResult = _permissionCheck.CheckUsername(username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
@@ -217,7 +226,7 @@ namespace MeshBackend.Controllers
         public JsonResult UpdateBulletin(int bulletinId, string username, int projectId, string bulletinName,
             string description)
         {
-            var checkUsername = _permissionCheck.CheckUsername(username);
+            var checkUsername = CheckUsername(username);
             if (checkUsername != null)
             {
                 return checkUsername;

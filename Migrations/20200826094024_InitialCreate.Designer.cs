@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MeshBackend.Migrations
 {
     [DbContext(typeof(MeshContext))]
-    [Migration("20200826043708_InitialCreate")]
+    [Migration("20200826094024_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -66,8 +66,7 @@ namespace MeshBackend.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
-                        .HasColumnType("varchar(50)")
-                        .HasMaxLength(50);
+                        .HasColumnType("varchar(50)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -636,15 +635,15 @@ namespace MeshBackend.Migrations
 
             modelBuilder.Entity("MeshBackend.Models.Assign", b =>
                 {
-                    b.HasOne("MeshBackend.Models.Task", "Task")
-                        .WithMany("Assigns")
-                        .HasForeignKey("TaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("MeshBackend.Models.User", "User")
                         .WithMany("Assigns")
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MeshBackend.Models.Subtask", "Subtask")
+                        .WithMany("Assigns")
+                        .HasForeignKey("TaskId", "Title")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

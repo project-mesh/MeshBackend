@@ -17,6 +17,7 @@ namespace MeshBackend.Migrations
                     Nickname = table.Column<string>(maxLength: 50, nullable: false),
                     Email = table.Column<string>(maxLength: 50, nullable: false),
                     PasswordDigest = table.Column<string>(maxLength: 70, nullable: true),
+                    PasswordSalt = table.Column<string>(maxLength: 70, nullable: true),
                     RememberDigest = table.Column<string>(maxLength: 70, nullable: true),
                     CreatedTime = table.Column<DateTime>(nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
@@ -37,7 +38,12 @@ namespace MeshBackend.Migrations
                     Nickname = table.Column<string>(maxLength: 50, nullable: false),
                     Email = table.Column<string>(maxLength: 50, nullable: false),
                     PasswordDigest = table.Column<string>(maxLength: 70, nullable: true),
+                    PasswordSalt = table.Column<string>(maxLength: 70, nullable: true),
                     RememberDigest = table.Column<string>(maxLength: 70, nullable: true),
+                    Avatar = table.Column<string>(maxLength: 2048, nullable: true),
+                    ColorPreference = table.Column<string>(maxLength: 50, nullable: true),
+                    LayoutPreference = table.Column<string>(maxLength: 50, nullable: true),
+                    RevealedPreference = table.Column<string>(maxLength: 50, nullable: true),
                     CreatedTime = table.Column<DateTime>(nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     UpdatedTime = table.Column<DateTime>(nullable: false)
@@ -78,10 +84,11 @@ namespace MeshBackend.Migrations
                 {
                     UserId = table.Column<int>(nullable: false),
                     TeamId = table.Column<int>(nullable: false),
+                    AccessCount = table.Column<int>(nullable: false),
                     CreatedTime = table.Column<DateTime>(nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     UpdatedTime = table.Column<DateTime>(nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.ComputedColumn),
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.ComputedColumn)
                 },
                 constraints: table =>
                 {
@@ -107,6 +114,8 @@ namespace MeshBackend.Migrations
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(maxLength: 50, nullable: false),
+                    Publicity = table.Column<bool>(nullable: false),
+                    Icon = table.Column<string>(maxLength: 2048, nullable: true),
                     TeamId = table.Column<int>(nullable: false),
                     AdminId = table.Column<int>(nullable: false),
                     CreatedTime = table.Column<DateTime>(nullable: false)
@@ -174,6 +183,34 @@ namespace MeshBackend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Develops",
+                columns: table => new
+                {
+                    UserId = table.Column<int>(nullable: false),
+                    ProjectId = table.Column<int>(nullable: false),
+                    CreatedTime = table.Column<DateTime>(nullable: false)
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                    UpdatedTime = table.Column<DateTime>(nullable: false)
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.ComputedColumn)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Develops", x => new { x.UserId, x.ProjectId });
+                    table.ForeignKey(
+                        name: "FK_Develops_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Develops_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ProjectMemoCollections",
                 columns: table => new
                 {
@@ -234,18 +271,17 @@ namespace MeshBackend.Migrations
                     UserId = table.Column<int>(nullable: false),
                     UpdatedTime = table.Column<DateTime>(nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.ComputedColumn),
-                    CollectionId = table.Column<int>(nullable: false),
-                    TeamMemoCollectionId = table.Column<int>(nullable: true)
+                    CollectionId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TeamMemos", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TeamMemos_TeamMemoCollections_TeamMemoCollectionId",
-                        column: x => x.TeamMemoCollectionId,
+                        name: "FK_TeamMemos_TeamMemoCollections_CollectionId",
+                        column: x => x.CollectionId,
                         principalTable: "TeamMemoCollections",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_TeamMemos_Users_UserId",
                         column: x => x.UserId,
@@ -328,7 +364,7 @@ namespace MeshBackend.Migrations
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.ComputedColumn),
                     Finished = table.Column<bool>(nullable: false),
                     BoardId = table.Column<int>(nullable: false),
-                    LeaderId = table.Column<int>(nullable: false),
+                    LeaderId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -385,7 +421,7 @@ namespace MeshBackend.Migrations
                     CreatedTime = table.Column<DateTime>(nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     UpdatedTime = table.Column<DateTime>(nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.ComputedColumn),
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.ComputedColumn)
                 },
                 constraints: table =>
                 {
@@ -497,11 +533,16 @@ namespace MeshBackend.Migrations
                 name: "IX_Bulletins_BoardId",
                 table: "Bulletins",
                 column: "BoardId");
-            
+
             migrationBuilder.CreateIndex(
                 name: "IX_Cooperations_TeamId",
                 table: "Cooperations",
                 column: "TeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Develops_ProjectId",
+                table: "Develops",
+                column: "ProjectId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProjectMemoCollections_ProjectId",
@@ -513,12 +554,6 @@ namespace MeshBackend.Migrations
                 name: "IX_ProjectMemos_CollectionId",
                 table: "ProjectMemos",
                 column: "CollectionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProjectMemos_UserId",
-                table: "ProjectMemos",
-                column: "UserId",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Projects_TeamId",
@@ -534,7 +569,7 @@ namespace MeshBackend.Migrations
                 name: "IX_TaskFeeds_UserId",
                 table: "TaskFeeds",
                 column: "UserId");
-            
+
             migrationBuilder.CreateIndex(
                 name: "IX_Tasks_BoardId",
                 table: "Tasks",
@@ -551,20 +586,21 @@ namespace MeshBackend.Migrations
                 column: "TeamId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TeamMemos_TeamMemoCollectionId",
+                name: "IX_TeamMemos_CollectionId",
                 table: "TeamMemos",
-                column: "TeamMemoCollectionId");
+                column: "CollectionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TeamMemos_UserId",
-                table: "TeamMemos",
-                column: "UserId",
-                unique: true);
-            
+                name: "IX_Teams_AdminId",
+                table: "Teams",
+                column: "AdminId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Admins");
+
             migrationBuilder.DropTable(
                 name: "Assigns");
 
@@ -573,6 +609,9 @@ namespace MeshBackend.Migrations
 
             migrationBuilder.DropTable(
                 name: "Cooperations");
+
+            migrationBuilder.DropTable(
+                name: "Develops");
 
             migrationBuilder.DropTable(
                 name: "ProjectMemos");
@@ -603,9 +642,6 @@ namespace MeshBackend.Migrations
 
             migrationBuilder.DropTable(
                 name: "BulletinBoards");
-
-            migrationBuilder.DropTable(
-                name: "Admins");
 
             migrationBuilder.DropTable(
                 name: "TaskBoards");

@@ -521,9 +521,6 @@ namespace MeshBackend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime");
 
-                    b.Property<int?>("TeamMemoCollectionId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Text")
                         .HasColumnType("varchar(100)")
                         .HasMaxLength(100);
@@ -542,7 +539,7 @@ namespace MeshBackend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TeamMemoCollectionId");
+                    b.HasIndex("CollectionId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -816,7 +813,9 @@ namespace MeshBackend.Migrations
                 {
                     b.HasOne("MeshBackend.Models.TeamMemoCollection", "TeamMemoCollection")
                         .WithMany("TeamMemos")
-                        .HasForeignKey("TeamMemoCollectionId");
+                        .HasForeignKey("CollectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("MeshBackend.Models.User", "User")
                         .WithOne("TeamMemo")

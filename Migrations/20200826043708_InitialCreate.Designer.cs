@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MeshBackend.Migrations
 {
     [DbContext(typeof(MeshContext))]
-    [Migration("20200722143939_InitialCreate")]
+    [Migration("20200826043708_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -43,6 +43,10 @@ namespace MeshBackend.Migrations
                         .HasColumnType("varchar(70)")
                         .HasMaxLength(70);
 
+                    b.Property<string>("PasswordSalt")
+                        .HasColumnType("varchar(70)")
+                        .HasMaxLength(70);
+
                     b.Property<string>("RememberDigest")
                         .HasColumnType("varchar(70)")
                         .HasMaxLength(70);
@@ -68,9 +72,6 @@ namespace MeshBackend.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("AdminId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime");
@@ -80,8 +81,6 @@ namespace MeshBackend.Migrations
                         .HasColumnType("datetime");
 
                     b.HasKey("TaskId", "Title", "UserId");
-
-                    b.HasIndex("AdminId");
 
                     b.HasIndex("UserId");
 
@@ -180,7 +179,7 @@ namespace MeshBackend.Migrations
                     b.Property<int>("TeamId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("AdminId")
+                    b.Property<int>("AccessCount")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedTime")
@@ -193,11 +192,32 @@ namespace MeshBackend.Migrations
 
                     b.HasKey("UserId", "TeamId");
 
-                    b.HasIndex("AdminId");
-
                     b.HasIndex("TeamId");
 
                     b.ToTable("Cooperations");
+                });
+
+            modelBuilder.Entity("MeshBackend.Models.Develop", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime>("UpdatedTime")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime");
+
+                    b.HasKey("UserId", "ProjectId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("Develops");
                 });
 
             modelBuilder.Entity("MeshBackend.Models.Project", b =>
@@ -213,10 +233,17 @@ namespace MeshBackend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime");
 
+                    b.Property<string>("Icon")
+                        .HasColumnType("varchar(2048)")
+                        .HasMaxLength(2048);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("varchar(50)")
                         .HasMaxLength(50);
+
+                    b.Property<bool>("Publicity")
+                        .HasColumnType("bit");
 
                     b.Property<int>("TeamId")
                         .HasColumnType("int");
@@ -337,9 +364,6 @@ namespace MeshBackend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int?>("AdminId")
-                        .HasColumnType("int");
-
                     b.Property<int>("BoardId")
                         .HasColumnType("int");
 
@@ -376,8 +400,6 @@ namespace MeshBackend.Migrations
                         .HasColumnType("datetime");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AdminId");
 
                     b.HasIndex("BoardId");
 
@@ -501,9 +523,6 @@ namespace MeshBackend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime");
 
-                    b.Property<int?>("TeamMemoCollectionId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Text")
                         .HasColumnType("varchar(100)")
                         .HasMaxLength(100);
@@ -522,7 +541,7 @@ namespace MeshBackend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TeamMemoCollectionId");
+                    b.HasIndex("CollectionId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -564,12 +583,24 @@ namespace MeshBackend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<string>("Avatar")
+                        .HasColumnType("varchar(2048)")
+                        .HasMaxLength(2048);
+
+                    b.Property<string>("ColorPreference")
+                        .HasColumnType("varchar(50)")
+                        .HasMaxLength(50);
+
                     b.Property<DateTime>("CreatedTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime");
 
                     b.Property<string>("Email")
                         .IsRequired()
+                        .HasColumnType("varchar(50)")
+                        .HasMaxLength(50);
+
+                    b.Property<string>("LayoutPreference")
                         .HasColumnType("varchar(50)")
                         .HasMaxLength(50);
 
@@ -582,9 +613,17 @@ namespace MeshBackend.Migrations
                         .HasColumnType("varchar(70)")
                         .HasMaxLength(70);
 
+                    b.Property<string>("PasswordSalt")
+                        .HasColumnType("varchar(70)")
+                        .HasMaxLength(70);
+
                     b.Property<string>("RememberDigest")
                         .HasColumnType("varchar(70)")
                         .HasMaxLength(70);
+
+                    b.Property<string>("RevealedPreference")
+                        .HasColumnType("varchar(50)")
+                        .HasMaxLength(50);
 
                     b.Property<DateTime>("UpdatedTime")
                         .ValueGeneratedOnAddOrUpdate()
@@ -597,10 +636,6 @@ namespace MeshBackend.Migrations
 
             modelBuilder.Entity("MeshBackend.Models.Assign", b =>
                 {
-                    b.HasOne("MeshBackend.Models.Admin", null)
-                        .WithMany("Assigns")
-                        .HasForeignKey("AdminId");
-
                     b.HasOne("MeshBackend.Models.Task", "Task")
                         .WithMany("Assigns")
                         .HasForeignKey("TaskId")
@@ -649,10 +684,6 @@ namespace MeshBackend.Migrations
 
             modelBuilder.Entity("MeshBackend.Models.Cooperation", b =>
                 {
-                    b.HasOne("MeshBackend.Models.Admin", null)
-                        .WithMany("Cooperations")
-                        .HasForeignKey("AdminId");
-
                     b.HasOne("MeshBackend.Models.Team", "Team")
                         .WithMany("Cooperations")
                         .HasForeignKey("TeamId")
@@ -661,6 +692,21 @@ namespace MeshBackend.Migrations
 
                     b.HasOne("MeshBackend.Models.User", "User")
                         .WithMany("Cooperations")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MeshBackend.Models.Develop", b =>
+                {
+                    b.HasOne("MeshBackend.Models.Project", "Project")
+                        .WithMany("Develops")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MeshBackend.Models.User", "User")
+                        .WithMany("Develops")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -710,10 +756,6 @@ namespace MeshBackend.Migrations
 
             modelBuilder.Entity("MeshBackend.Models.Task", b =>
                 {
-                    b.HasOne("MeshBackend.Models.Admin", null)
-                        .WithMany("Tasks")
-                        .HasForeignKey("AdminId");
-
                     b.HasOne("MeshBackend.Models.TaskBoard", "TaskBoard")
                         .WithMany()
                         .HasForeignKey("BoardId")
@@ -773,7 +815,9 @@ namespace MeshBackend.Migrations
                 {
                     b.HasOne("MeshBackend.Models.TeamMemoCollection", "TeamMemoCollection")
                         .WithMany("TeamMemos")
-                        .HasForeignKey("TeamMemoCollectionId");
+                        .HasForeignKey("CollectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("MeshBackend.Models.User", "User")
                         .WithOne("TeamMemo")

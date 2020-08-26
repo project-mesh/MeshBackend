@@ -138,7 +138,7 @@ namespace MeshBackend.Controllers
                 BoardId = bulletinBoard.Id
             };
                 
-                //Update feed
+            //Update feed
             var feedUsers = _meshContext.Develops
                 .Where(d => d.ProjectId == projectId);
 
@@ -256,8 +256,15 @@ namespace MeshBackend.Controllers
 
             try
             {
-                bulletin.Title = bulletinName;
-                bulletin.Content = description;
+                if (bulletinName != null)
+                {
+                    bulletin.Title = bulletinName;
+                }
+
+                if (description != null)
+                {
+                    bulletin.Content = description;
+                }
                 _meshContext.SaveChanges();
             }
             catch (Exception e)

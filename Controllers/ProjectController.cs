@@ -355,6 +355,7 @@ namespace MeshBackend.Controllers
             {
                 project.Publicity = isPublic;
                 project.Name = projectName;
+                _meshContext.Projects.Update(project);
                 _meshContext.SaveChanges();
             }
             catch (Exception e)

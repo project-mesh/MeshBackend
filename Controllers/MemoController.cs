@@ -417,6 +417,7 @@ namespace MeshBackend.Controllers
                     knowledge.Text = hyperlink;
                 }
 
+                _meshContext.ProjectMemos.Update(knowledge);
                 _meshContext.SaveChanges();
             }
             catch (Exception e)
@@ -493,6 +494,7 @@ namespace MeshBackend.Controllers
                     knowledge.Text = hyperlink;
                 }
 
+                _meshContext.TeamMemos.Update(knowledge);
                 _meshContext.SaveChanges();
             }
             catch (Exception e)

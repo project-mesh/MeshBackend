@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MeshBackend.Helpers
 { 
-    public class JsonReturnHelper : Controller
+    public static class JsonReturnHelper
     {
         public static JsonResult ErrorReturn(int code, string msg)
         {

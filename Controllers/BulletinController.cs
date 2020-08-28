@@ -42,9 +42,9 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(402, "Invalid bulletinName.");
             }
 
-            if (description.IsNullOrEmpty() && description.Length > 100)
+            if (description.IsNullOrEmpty() || description.Length > 100)
             {
-                return JsonReturnHelper.ErrorReturn(403, "Description is too long.");
+                return JsonReturnHelper.ErrorReturn(403, "Invalid Description.");
             }
 
             return null;
@@ -263,6 +263,8 @@ namespace MeshBackend.Controllers
                 {
                     bulletin.Content = description;
                 }
+
+                _meshContext.Bulletins.Update(bulletin);
                 _meshContext.SaveChanges();
             }
             catch (Exception e)

@@ -50,7 +50,7 @@ namespace MeshBackend.Controllers
             return HttpContext.Session.GetString(username) == null ? JsonReturnHelper.ErrorReturn(2, "User status error.") : null;
         }
 
-        
+
         [HttpGet]
         public JsonResult QueryTeam(string username, int teamId)
         {
@@ -59,60 +59,59 @@ namespace MeshBackend.Controllers
             {
                 return checkResult;
             }
-            
+
             var team = _meshContext.Teams.FirstOrDefault(t => t.Id == teamId);
-            if (team != null)
-            {
-                //Find team members
-                var teamCooperation = _meshContext.Cooperations
-                    .Where(c => c.TeamId == team.Id);
-                var adminName = _meshContext.Users.First(u => u.Id == team.AdminId).Nickname;
-                var members = _meshContext.Users
-                    .Join(teamCooperation, u => u.Id, c => c.UserId, (u, c) =>
-                        new Member()
-                        {
-                            Id = u.Id,
-                            Username = u.Nickname
-                        }).ToList();
-
-                //Find projects of the team
-                var project = _meshContext.Projects
-                    .Where(p => p.TeamId == teamId);
-                var teamProjects = _meshContext.Users
-                    .Join(project, u => u.Id, p => p.AdminId, (u, p) =>
-                        new TeamProject()
-                        {
-                            ProjectId = p.Id,
-                            ProjectName = p.Name,
-                            AdminName = u.Nickname
-                        }).ToList();
-
-                return Json(new
-                {    
-                    err_code = 0,
-                    data = new
-                    {
-                        isSuccess = true,
-                        msg = "",
-                        team = new
-                        {
-                            teamId = team.Id,
-                            teamName = team.Name,
-                            createTime = team.CreatedTime,
-                            adminName = adminName,
-                            members = members,
-                            teamProjects = teamProjects
-                        }
-                    }
-                });
-            }
-            else
+            if (team == null)
             {
                 return JsonReturnHelper.ErrorReturn(302, "Invalid teamId.");
             }
+
+            //Find team members
+            var teamCooperation = _meshContext.Cooperations
+                .Where(c => c.TeamId == team.Id);
+            var adminName = _meshContext.Users.First(u => u.Id == team.AdminId).Nickname;
+            var members = _meshContext.Users
+                .Join(teamCooperation, u => u.Id, c => c.UserId, (u, c) =>
+                    new Member()
+                    {
+                        Id = u.Id,
+                        Username = u.Nickname
+                    }).ToList();
+
+            //Find projects of the team
+            var project = _meshContext.Projects
+                .Where(p => p.TeamId == teamId);
+            var teamProjects = _meshContext.Users
+                .Join(project, u => u.Id, p => p.AdminId, (u, p) =>
+                    new TeamProject()
+                    {
+                        ProjectId = p.Id,
+                        ProjectName = p.Name,
+                        AdminName = u.Nickname
+                    }).ToList();
+
+            return Json(new
+            {
+                err_code = 0,
+                data = new
+                {
+                    isSuccess = true,
+                    msg = "",
+                    team = new
+                    {
+                        teamId = team.Id,
+                        teamName = team.Name,
+                        createTime = team.CreatedTime,
+                        adminName = adminName,
+                        members = members,
+                        teamProjects = teamProjects
+                    }
+                }
+            });
+
         }
 
-        
+
         [HttpPost]
         public JsonResult CreateTeam(string username, string teamName)
         {

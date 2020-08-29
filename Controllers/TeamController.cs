@@ -60,6 +60,7 @@ namespace MeshBackend.Controllers
                 return checkResult;
             }
 
+            var user = _meshContext.Users.First(u => u.Email == username);
             var team = _meshContext.Teams.FirstOrDefault(t => t.Id == teamId);
             if (team == null)
             {
@@ -90,6 +91,20 @@ namespace MeshBackend.Controllers
                         AdminName = u.Nickname
                     }).ToList();
 
+            var userTeamCooperation = teamCooperation.First(c => c.UserId == user.Id);
+
+            try
+            {
+                userTeamCooperation.AccessCount += 1;
+                _meshContext.Cooperations.Update(userTeamCooperation);
+                _meshContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
+            }
+            
             return Json(new
             {
                 err_code = 0,

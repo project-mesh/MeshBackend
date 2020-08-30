@@ -396,7 +396,7 @@ namespace MeshBackend.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BulletinFeeds", x => x.BulletinId);
+                    table.PrimaryKey("PK_BulletinFeeds", x => new{x.BulletinId,x.UserId});
                     table.ForeignKey(
                         name: "FK_BulletinFeeds_Bulletins_BulletinId",
                         column: x => x.BulletinId,
@@ -448,7 +448,7 @@ namespace MeshBackend.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TaskFeeds", x => x.TaskId);
+                    table.PrimaryKey("PK_TaskFeeds", x => new {x.TaskId, x.UserId});
                     table.ForeignKey(
                         name: "FK_TaskFeeds_Tasks_TaskId",
                         column: x => x.TaskId,

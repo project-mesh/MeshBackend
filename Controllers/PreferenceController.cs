@@ -25,7 +25,7 @@ namespace MeshBackend.Controllers
         
         public JsonResult CheckUsername(string username)
         {
-            if (username.IsNullOrEmpty() || username.Length > 50)
+            if (!CornerCaseCheckHelper.Check(username,50,CornerCaseCheckHelper.Username))
             {
                 return JsonReturnHelper.ErrorReturn(104, "Invalid username.");
             }
@@ -41,6 +41,12 @@ namespace MeshBackend.Controllers
             {
                 return checkResult;
             }
+
+            if (!CornerCaseCheckHelper.Check(preferenceColor, 50, CornerCaseCheckHelper.Title))
+            {
+                return JsonReturnHelper.ErrorReturn(110, "Invalid preferenceColor");
+            }
+            
 
             var user = _meshContext.Users.First(u => u.Email == username);
             try
@@ -68,6 +74,11 @@ namespace MeshBackend.Controllers
                 return checkResult;
             }
 
+            if (!CornerCaseCheckHelper.Check(preferenceLayout, 50, CornerCaseCheckHelper.Title))
+            {
+                return JsonReturnHelper.ErrorReturn(111, "Invalid preferenceLayout");
+            }
+            
             var user = _meshContext.Users.First(u => u.Email == username);
             try
             {
@@ -92,6 +103,11 @@ namespace MeshBackend.Controllers
             if (checkResult != null)
             {
                 return checkResult;
+            }
+            
+            if (!CornerCaseCheckHelper.Check(showMode, 50, CornerCaseCheckHelper.Title))
+            {
+                return JsonReturnHelper.ErrorReturn(112, "Invalid showMode");
             }
 
             var user = _meshContext.Users.First(u => u.Email == username);

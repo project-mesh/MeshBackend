@@ -113,6 +113,13 @@ namespace MeshBackend.Models
                 .WithMany(p => p.Develops)
                 .HasForeignKey(d => d.ProjectId);
 
+            //Feeds
+            modelBuilder.Entity<BulletinFeed>()
+                .HasKey(d => new {d.UserId, d.BulletinId});
+            modelBuilder.Entity<TaskFeed>()
+                .HasKey(d => new {d.UserId, d.TaskId});
+
+
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

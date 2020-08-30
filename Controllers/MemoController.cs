@@ -29,13 +29,12 @@ namespace MeshBackend.Controllers
 
         public JsonResult CheckUsername(string username)
         {
-            if (username.IsNullOrEmpty() || username.Length > 50)
+            if (!CornerCaseCheckHelper.Check(username,50,CornerCaseCheckHelper.Username))
             {
                 return JsonReturnHelper.ErrorReturn(104, "Invalid username.");
             }
             return HttpContext.Session.GetString(username) == null ? JsonReturnHelper.ErrorReturn(2, "User status error.") : null;
         }
-
         public class MemoInfo
         {
             public int KnowledgeId { get; set; }
@@ -83,21 +82,27 @@ namespace MeshBackend.Controllers
                 return checkResult;
             }
 
-            if (knowledgeName.IsNullOrEmpty()||knowledgeName.Length > 50)
+            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(401, "Invalid projectId");
+            }
+
+            if (!CornerCaseCheckHelper.Check(knowledgeName, 50, CornerCaseCheckHelper.Title))
             {
                 return JsonReturnHelper.ErrorReturn(802, "Invalid KnowledgeName.");
             }
 
-            if (hyperlink.IsNullOrEmpty()||hyperlink.Length > 100)
+            if (!CornerCaseCheckHelper.Check(hyperlink, 100, CornerCaseCheckHelper.Description))
             {
                 return JsonReturnHelper.ErrorReturn(803, "Invalid hyperlink.");
             }
+            
 
             var user = _meshContext.Users.First(u => u.Email == username);
             var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
             if (project == null)
             {
-                return JsonReturnHelper.ErrorReturn(707, "Invalid projectId.");
+                return JsonReturnHelper.ErrorReturn(707, "Project does not exist.");
             }
 
             var memoCollection = _meshContext.ProjectMemoCollections.First(p => p.ProjectId == project.Id);
@@ -145,21 +150,27 @@ namespace MeshBackend.Controllers
                 return checkResult;
             }
 
-            if (knowledgeName.IsNullOrEmpty()||knowledgeName.Length > 50)
+            if (!CornerCaseCheckHelper.Check(teamId, 0, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(301, "Invalid teamId");
+            }
+
+            if (!CornerCaseCheckHelper.Check(knowledgeName, 50, CornerCaseCheckHelper.Title))
             {
                 return JsonReturnHelper.ErrorReturn(802, "Invalid KnowledgeName.");
             }
 
-            if (hyperlink.IsNullOrEmpty()||hyperlink.Length > 100)
+            if (!CornerCaseCheckHelper.Check(hyperlink, 100, CornerCaseCheckHelper.Description))
             {
                 return JsonReturnHelper.ErrorReturn(803, "Invalid hyperlink.");
             }
+
 
             var user = _meshContext.Users.First(u => u.Email == username);
             var team = _meshContext.Teams.FirstOrDefault(t => t.Id == teamId);
             if (team == null)
             {
-                return JsonReturnHelper.ErrorReturn(302, "Invalid teamId.");
+                return JsonReturnHelper.ErrorReturn(302, "Team does not exist.");
             }
 
             var memoCollection = _meshContext.TeamMemoCollections.First(p => p.TeamId == team.Id);
@@ -207,10 +218,20 @@ namespace MeshBackend.Controllers
                 return checkResult;
             }
 
+            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(701, "Invalid projectId.");
+            }
+
+            if (!CornerCaseCheckHelper.Check(knowledgeId, 50, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(807, "Invalid knowledgeId.");
+            }
+
             var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
             if (project == null)
             {
-                return JsonReturnHelper.ErrorReturn(707, "Invalid projectId.");
+                return JsonReturnHelper.ErrorReturn(707, "Project does not exist.");
             }
 
             var memoCollection = _meshContext.ProjectMemoCollections.First(p => p.ProjectId == projectId);
@@ -252,11 +273,21 @@ namespace MeshBackend.Controllers
             {
                 return checkResult;
             }
+            
+            if (!CornerCaseCheckHelper.Check(teamId, 0, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(301, "Invalid teamId.");
+            }
+
+            if (!CornerCaseCheckHelper.Check(knowledgeId, 50, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(807, "Invalid knowledgeId.");
+            }
 
             var team = _meshContext.Teams.FirstOrDefault(p => p.Id == teamId);
             if (team == null)
             {
-                return JsonReturnHelper.ErrorReturn(302, "Invalid teamId.");
+                return JsonReturnHelper.ErrorReturn(302, "Team does not exist.");
             }
 
             var memoCollection = _meshContext.TeamMemoCollections.First(p => p.TeamId == teamId);
@@ -298,10 +329,17 @@ namespace MeshBackend.Controllers
             {
                 return checkResult;
             }
+            
+            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(701, "Invalid projectId.");
+            }
+
+            
             var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
             if (project == null)
             {
-                return JsonReturnHelper.ErrorReturn(707, "Invalid projectId.");
+                return JsonReturnHelper.ErrorReturn(707, "Project does not exist.");
             }
             
             if (_permissionCheck.CheckProjectPermission(username, project) == PermissionCheckHelper.ProjectOutsider)
@@ -333,10 +371,17 @@ namespace MeshBackend.Controllers
             {
                 return checkResult;
             }
+            
+            if (!CornerCaseCheckHelper.Check(teamId, 0, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(301, "Invalid teamId.");
+            }
+
+            
             var team = _meshContext.Projects.FirstOrDefault(p => p.Id == teamId);
             if (team == null)
             {
-                return JsonReturnHelper.ErrorReturn(302, "Invalid teamId.");
+                return JsonReturnHelper.ErrorReturn(302, "Team does not exist.");
             }
             
             if (_permissionCheck.CheckProjectPermission(username, team) == PermissionCheckHelper.TeamOutsider)
@@ -370,21 +415,27 @@ namespace MeshBackend.Controllers
             {
                 return checkResult;
             }
+            
+            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(401, "Invalid projectId");
+            }
 
-            if (knowledgeName.Length > 50)
+            if (!CornerCaseCheckHelper.Check(knowledgeName, 50, CornerCaseCheckHelper.Title))
             {
                 return JsonReturnHelper.ErrorReturn(802, "Invalid KnowledgeName.");
             }
 
-            if (hyperlink.Length > 100)
+            if (!CornerCaseCheckHelper.Check(hyperlink, 100, CornerCaseCheckHelper.Description))
             {
                 return JsonReturnHelper.ErrorReturn(803, "Invalid hyperlink.");
             }
             
+            
             var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
             if (project == null)
             {
-                return JsonReturnHelper.ErrorReturn(707, "Invalid projectId.");
+                return JsonReturnHelper.ErrorReturn(707, "Project does not exist.");
             }
 
             var memoCollection = _meshContext.ProjectMemoCollections.First(p => p.ProjectId == projectId);
@@ -448,16 +499,20 @@ namespace MeshBackend.Controllers
                 return checkResult;
             }
 
-            if (knowledgeName.Length > 50)
+            if (!CornerCaseCheckHelper.Check(teamId, 0, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(301, "Invalid teamId");
+            }
+
+            if (!CornerCaseCheckHelper.Check(knowledgeName, 50, CornerCaseCheckHelper.Title))
             {
                 return JsonReturnHelper.ErrorReturn(802, "Invalid KnowledgeName.");
             }
 
-            if (hyperlink.Length > 100)
+            if (!CornerCaseCheckHelper.Check(hyperlink, 100, CornerCaseCheckHelper.Description))
             {
                 return JsonReturnHelper.ErrorReturn(803, "Invalid hyperlink.");
             }
-            
             var team = _meshContext.Teams.FirstOrDefault(p => p.Id == teamId);
             if (team == null)
             {

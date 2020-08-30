@@ -6,12 +6,12 @@ namespace MeshBackend.Models
 {
     public class TaskFeed
     {
-        [Key]
         public int TaskId { get; set; }
         
         [ForeignKey("TaskId")]
         public Task Task { get; set; }
         
+        [Key]
         public int UserId { get; set; }
         
         [ForeignKey("UserId")]

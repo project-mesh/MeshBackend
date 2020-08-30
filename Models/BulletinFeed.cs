@@ -6,7 +6,6 @@ namespace MeshBackend.Models
 {
     public class BulletinFeed
     {
-        [Key]
         public int BulletinId { get; set; }
         
         [ForeignKey("BulletinId")]

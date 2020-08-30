@@ -27,7 +27,7 @@ namespace MeshBackend.Controllers
             _logger = logger;
             _meshContext = meshContext;
         }
-
+        
         public bool CheckUserSession(string username)
         {
             if (HttpContext.Session.IsAvailable && HttpContext.Session.GetString(username) != null)
@@ -95,7 +95,7 @@ namespace MeshBackend.Controllers
         [Route("register")]
         public JsonResult Register(string username, string password)
         {
-            if (username.IsNullOrEmpty() || username.Length > 50)
+            if (!CornerCaseCheckHelper.Check(username,50,CornerCaseCheckHelper.Username))
             {
                 return JsonReturnHelper.ErrorReturn(104, "Invalid username");
             }
@@ -144,7 +144,7 @@ namespace MeshBackend.Controllers
         [Route("login")]
         public JsonResult Login(string username, string password, string token)
         {
-            if (username.IsNullOrEmpty() || username.Length > 50)
+            if (!CornerCaseCheckHelper.Check(username,50,CornerCaseCheckHelper.Username))
             {
                 return JsonReturnHelper.ErrorReturn(104, "Invalid username");
             }
@@ -173,7 +173,9 @@ namespace MeshBackend.Controllers
                         TeamName = t.Name,
                         AdminId = t.AdminId
                     }).ToList();
-                    
+            var preferenceTeamCount = cooperation.Max(a => a.AccessCount);
+            var preferenceTeam = cooperation.First(c => c.AccessCount == preferenceTeamCount);
+
             return Json(new
             {
                 err_code = 0,
@@ -183,6 +185,14 @@ namespace MeshBackend.Controllers
                     username = username,
                     role = "user",
                     token = "",
+                    avatar = user.Avatar,
+                    preference = new
+                    {
+                      preferenceShowMode = user.RevealedPreference,
+                      preferenceColor = user.ColorPreference,
+                      preferenceLayout = user.LayoutPreference,
+                      preferenceTeam = preferenceTeam.TeamId
+                    },
                     teams = teams
                 },
             });

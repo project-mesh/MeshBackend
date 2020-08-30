@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Castle.Core.Internal;
 using MeshBackend.Helpers;
@@ -6,6 +7,7 @@ using MeshBackend.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ValueGeneration;
 using Microsoft.Extensions.Logging;
 
 namespace MeshBackend.Controllers
@@ -28,14 +30,14 @@ namespace MeshBackend.Controllers
         
         public JsonResult CheckUsername(string username)
         {
-            if (username.IsNullOrEmpty() || username.Length > 50)
+            if (!CornerCaseCheckHelper.Check(username,50,CornerCaseCheckHelper.Username))
             {
                 return JsonReturnHelper.ErrorReturn(104, "Invalid username.");
             }
             return HttpContext.Session.GetString(username) == null ? JsonReturnHelper.ErrorReturn(2, "User status error.") : null;
         }
         
-        public JsonResult CheckBulletin(string title, string description)
+        public JsonResult CheckBulleti(string title, string description)
         {
             if (title.IsNullOrEmpty() || title.Length > 50)
             {
@@ -99,16 +101,26 @@ namespace MeshBackend.Controllers
                 return checkUsername;
             }
 
-            var checkBulletin = CheckBulletin(bulletinName, description);
-            if (checkBulletin != null)
+            if (!CornerCaseCheckHelper.Check(bulletinName, 50, CornerCaseCheckHelper.Title))
             {
-                return checkBulletin;
+                return JsonReturnHelper.ErrorReturn(402, "Invalid bulletinName.");
             }
 
+            if (!CornerCaseCheckHelper.Check(description, 100, CornerCaseCheckHelper.Description))
+            {
+                return JsonReturnHelper.ErrorReturn(403, "Invalid Description.");
+            }
+
+            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(401, "Invalid projectId.");
+
+            }
+            
             var project = _meshContext.Projects.FirstOrDefault(u => u.Id == projectId);
             if (project == null)
             {
-                return JsonReturnHelper.ErrorReturn(401, "Invalid projectId.");
+                return JsonReturnHelper.ErrorReturn(411, "Project does not exist.");
             }
 
             //Find bulletinBoard of this project
@@ -130,7 +142,6 @@ namespace MeshBackend.Controllers
             //Create the bulletin
             var newBulletin = new Bulletin()
             {
-
                 Title = bulletinName,
                 Content = description,
                 BoardId = bulletinBoard.Id
@@ -138,8 +149,9 @@ namespace MeshBackend.Controllers
                 
             //Update feed
             var feedUsers = _meshContext.Develops
-                .Where(d => d.ProjectId == projectId);
-
+                .Where(d => d.ProjectId == projectId)
+                .ToList();
+            
             //Start Transaction to save the bulletin
             using (var transaction = _meshContext.Database.BeginTransaction())
             {
@@ -148,23 +160,30 @@ namespace MeshBackend.Controllers
 
                     _meshContext.Bulletins.Add(newBulletin);
                     _meshContext.SaveChanges();
+                    
+                    var bulletinId = newBulletin.Id;
+                    var feedList = new List<BulletinFeed>();
                     foreach (var feedUser in feedUsers)
                     {
-                        _meshContext.BulletinFeeds.Add(new BulletinFeed()
-                        {
-                            UserId = user.Id,
-                            BulletinId = newBulletin.Id
-                        });
+                       feedList.Add(new BulletinFeed()
+                       {
+                           UserId = feedUser.UserId,
+                           BulletinId = bulletinId
+                       });
                     }
 
+                    _meshContext.AddRange(feedList);
                     _meshContext.SaveChanges();
                     transaction.Commit();
+
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e.ToString());
                     return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
                 }
+
+
             }
 
             return Json(new
@@ -191,13 +210,28 @@ namespace MeshBackend.Controllers
                 return checkResult;
             }
             
+            if (!CornerCaseCheckHelper.Check(bulletinId, 0, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(401, "Invalid bulletinId.");
+            }
+            
+            
+            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(401, "Invalid projectId.");
+            }
+            
             //Check if target bulletin exists 
             var user = _meshContext.Users.First(u => u.Email == username);
-            var bulletin = _meshContext.Bulletins.Find(bulletinId);
             var project = _meshContext.Projects.Find(projectId);
-            if (bulletin == null || project == null)
+            if (project == null)
             {
-                return JsonReturnHelper.ErrorReturn(420, "Invalid bulletinId or projectId");
+                return JsonReturnHelper.ErrorReturn(420, "Project does not exist.");
+            }
+            var bulletin = _meshContext.Bulletins.Find(bulletinId);
+            if (bulletin == null)
+            {
+                return JsonReturnHelper.ErrorReturn(401, "Bulletin does not exist.");
             }
 
             if (project.AdminId != user.Id)
@@ -231,10 +265,24 @@ namespace MeshBackend.Controllers
                 return checkUsername;
             }
 
-            var checkBulletin = CheckBulletin(bulletinName, description);
-            if (checkBulletin != null)
+            if (!CornerCaseCheckHelper.Check(bulletinId, 0, CornerCaseCheckHelper.Id))
             {
-                return checkBulletin;
+                return JsonReturnHelper.ErrorReturn(401, "Invalid bulletinId.");
+            }
+
+            if (!CornerCaseCheckHelper.Check(bulletinName, 50, CornerCaseCheckHelper.Title))
+            {
+                return JsonReturnHelper.ErrorReturn(402, "Invalid bulletinName.");
+            }
+
+            if (!CornerCaseCheckHelper.Check(description, 100, CornerCaseCheckHelper.Description))
+            {
+                return JsonReturnHelper.ErrorReturn(403, "Invalid Description.");
+            }
+
+            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(401, "Invalid projectId.");
             }
 
             //Check if target bulletin exists 

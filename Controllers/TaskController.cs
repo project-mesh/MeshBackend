@@ -705,7 +705,21 @@ namespace MeshBackend.Controllers
                     Founder = founder.Nickname,
                     Name = s.Name,
                     Principal = _meshContext.Users.First(u=>u.Id==s.LeaderId).Nickname,
-                    SubTasks = GetSubTasks(s.Id,founder.Nickname)
+                    SubTasks = _meshContext.Subtasks
+                        .Where(b => b.TaskId == s.Id)
+                        .Select(e => new SubTaskInfo()
+                        {
+                            Title = e.Title,
+                            TaskId = e.TaskId,
+                            CreatedTime = e.CreatedTime,
+                            Description = e.Description,
+                            Founder = founder.Nickname,
+                            Principal = _meshContext.Assigns
+                                .Where(a => a.TaskId == e.TaskId && a.Title == e.Title)
+                                .Join(_meshContext.Users, n => n.UserId, u => u.Id, (n, u) => u.Nickname)
+                                .ToList()
+                        })
+                        .ToList()
                 })
                 .ToList();
             return TaskListResult(tasks);
@@ -767,10 +781,29 @@ namespace MeshBackend.Controllers
                     EndTime = m.task.EndTime,
                     Founder = m.Founder,
                     Name = m.task.Name,
-                    Principal = _meshContext.Users.First(u=>u.Id==m.task.LeaderId).Nickname,
-                    SubTasks = GetSubTasks(m.task.Id,m.Founder)
+                    Principal = _meshContext.Users.First(u => u.Id == m.task.LeaderId).Nickname,
                 })
                 .ToList();
+
+            foreach (var task in tasks)
+            {
+                task.SubTasks = _meshContext.Subtasks
+                    .Where(b => b.TaskId == task.Id)
+                    .Select(s => new SubTaskInfo()
+                    {
+                        Title = s.Title,
+                        TaskId = s.TaskId,
+                        CreatedTime = s.CreatedTime,
+                        Description = s.Description,
+                        Founder = task.Founder,
+                        Principal = _meshContext.Assigns
+                            .Where(a => a.TaskId == s.TaskId && a.Title == s.Title)
+                            .Join(_meshContext.Users, n => n.UserId, u => u.Id, (n, u) => u.Nickname)
+                            .ToList()
+                    })
+                    .ToList();
+            }
+            
             return TaskListResult(tasks);
         }
         

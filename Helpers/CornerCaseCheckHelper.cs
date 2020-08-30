@@ -39,7 +39,7 @@ namespace MeshBackend.Helpers
                     {
                         var dateTime = Convert.ToDateTime(time);
                     }
-                    catch (Exception e)
+                    catch 
                     {
                         return false;
                     }

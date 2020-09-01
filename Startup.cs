@@ -29,7 +29,7 @@ namespace MeshBackend
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<MeshContext>(options =>
-                options.UseMySQL(Configuration.GetConnectionString("Dev")));
+                options.UseMySQL(Configuration.GetConnectionString("DB")));
             services.AddDistributedMemoryCache();
             services.AddSession(options =>
             {

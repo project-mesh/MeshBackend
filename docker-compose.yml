@@ -1,0 +1,17 @@
+version: "3"
+services:
+  db: 
+    image: "mysql:8"
+    environment:
+      MYSQL_ROOT_PASSWORD: mesh
+      MYSQL_PASSWORD: mesh
+      MYSQL_DATABASE: mesh
+      MYSQL_USER: mesh
+
+  app:
+    build:
+      context: .
+    depends_on:
+      - db
+    ports:
+      - 127.0.0.1:8080:8080

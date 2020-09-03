@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MeshBackend.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -29,7 +30,7 @@ namespace MeshBackend
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<MeshContext>(options =>
-                options.UseMySQL(Configuration.GetConnectionString("Dev")));
+                options.UseMySQL(Configuration.GetConnectionString("DB")));
             services.AddDistributedMemoryCache();
             services.AddSession(options =>
             {
@@ -53,13 +54,16 @@ namespace MeshBackend
             app.UseRouting();
 
             app.UseAuthorization();
-
+            
+            app.SeedData();
+            
             app.UseSession();
             
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+            
         }
     }
 }

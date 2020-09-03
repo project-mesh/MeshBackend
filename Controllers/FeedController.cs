@@ -35,16 +35,23 @@ namespace MeshBackend.Controllers
             return HttpContext.Session.GetString(username) == null ? JsonReturnHelper.ErrorReturn(2, "User status error.") : null;
         }
 
-        [HttpGet]
-        public JsonResult QueryNotification(string username)
+        public class FeedRequest
         {
-            var checkResult = CheckUsername(username);
+            public string username { get; set; }
+            public int type { get; set; }
+            public int id { get; set; }
+        }
+        
+        [HttpGet]
+        public JsonResult QueryNotification(FeedRequest request)
+        {
+            var checkResult = CheckUsername(request.username);
             if (checkResult != null)
             {
                 return checkResult;
             }
 
-            var user = _meshContext.Users.First(u => u.Email==username);
+            var user = _meshContext.Users.First(u => u.Email==request.username);
 
             var bulletinFeeds = _meshContext.BulletinFeeds
                 .Where(f => f.UserId == user.Id)
@@ -108,26 +115,26 @@ namespace MeshBackend.Controllers
         }
 
         [HttpDelete]
-        public JsonResult DeleteNotification(string username,int type,int id)
+        public JsonResult DeleteNotification(FeedRequest request)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = CheckUsername(request.username);
             if (checkResult != null)
             {
                 return checkResult;
             }
 
-            if (!CornerCaseCheckHelper.Check(id, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.id, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(910, "Invalid Id");
             }
-            var user = _meshContext.Users.First(u => u.Email == username);
+            var user = _meshContext.Users.First(u => u.Email == request.username);
 
-            switch (type)
+            switch (request.type)
             {
                 case BULLETIN:
                 {
                     var bulletin =
-                        _meshContext.BulletinFeeds.FirstOrDefault(f => f.BulletinId == id && f.UserId == user.Id);
+                        _meshContext.BulletinFeeds.FirstOrDefault(f => f.BulletinId == request.id && f.UserId == user.Id);
                     if (bulletin == null)
                     {
                         return JsonReturnHelper.ErrorReturn(901, "Invalid bulletinId");
@@ -148,7 +155,7 @@ namespace MeshBackend.Controllers
                 }
                 case TASK:
                 {
-                    var task = _meshContext.TaskFeeds.FirstOrDefault(f => f.TaskId == id && f.UserId == user.Id);
+                    var task = _meshContext.TaskFeeds.FirstOrDefault(f => f.TaskId == request.id && f.UserId == user.Id);
                     if (task == null)
                     {
                         return JsonReturnHelper.ErrorReturn(902, "Invalid TaskId");

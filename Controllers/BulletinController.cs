@@ -52,25 +52,34 @@ namespace MeshBackend.Controllers
             return null;
         }
 
+        public class BulletinRequest
+        {
+            public string username { get; set; }
+            public int projectId { get; set; }
+            public string bulletinName { get; set; }
+            public string description { get; set; }
+            public int bulletinId { get; set; }
+        }
+        
 
         [HttpGet]
-        public JsonResult QueryBulletin(string username, int projectId)
+        public JsonResult QueryBulletin(BulletinRequest request)
         {
-            var checkUsername = CheckUsername(username);
+            var checkUsername = CheckUsername(request.username);
             if (checkUsername != null)
             {
                 return checkUsername;
             }
 
             //Find the target project
-            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
+            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == request.projectId);
             if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(401, "Invalid projectId.");
             }
 
             var bulletins = _meshContext.BulletinBoards
-                .Where(b => b.ProjectId == projectId)
+                .Where(b => b.ProjectId == request.projectId)
                 .Join(_meshContext.Bulletins, bb => bb.Id, b => b.BoardId, (bb, b) => new
                 {
                     Id = b.Id,
@@ -93,47 +102,47 @@ namespace MeshBackend.Controllers
         }
 
         [HttpPost]
-        public JsonResult CreateBulletin(string username, int projectId, string bulletinName, string description)
+        public JsonResult CreateBulletin(BulletinRequest request)
         {
-            var checkUsername = CheckUsername(username);
+            var checkUsername = CheckUsername(request.username);
             if (checkUsername != null)
             {
                 return checkUsername;
             }
 
-            if (!CornerCaseCheckHelper.Check(bulletinName, 50, CornerCaseCheckHelper.Title))
+            if (!CornerCaseCheckHelper.Check(request.bulletinName, 50, CornerCaseCheckHelper.Title))
             {
                 return JsonReturnHelper.ErrorReturn(402, "Invalid bulletinName.");
             }
 
-            if (!CornerCaseCheckHelper.Check(description, 100, CornerCaseCheckHelper.Description))
+            if (!CornerCaseCheckHelper.Check(request.description, 100, CornerCaseCheckHelper.Description))
             {
                 return JsonReturnHelper.ErrorReturn(403, "Invalid Description.");
             }
 
-            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.projectId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(401, "Invalid projectId.");
 
             }
             
-            var project = _meshContext.Projects.FirstOrDefault(u => u.Id == projectId);
+            var project = _meshContext.Projects.FirstOrDefault(u => u.Id == request.projectId);
             if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(411, "Project does not exist.");
             }
 
             //Find bulletinBoard of this project
-            var bulletinBoard = _meshContext.BulletinBoards.First(b => b.ProjectId == projectId);
-            var user = _meshContext.Users.First(u => u.Email == username);
-            if (_permissionCheck.CheckProjectPermission(username,project)!=PermissionCheckHelper.ProjectAdmin)
+            var bulletinBoard = _meshContext.BulletinBoards.First(b => b.ProjectId == request.projectId);
+            var user = _meshContext.Users.First(u => u.Email == request.username);
+            if (_permissionCheck.CheckProjectPermission(request.username,project)!=PermissionCheckHelper.ProjectAdmin)
             {
                 return JsonReturnHelper.ErrorReturn(421, "Permission denied.");
             }
 
             //Check if the bulletin already exists.
             var bulletin =
-                _meshContext.Bulletins.FirstOrDefault(b => b.Title == bulletinName && b.BoardId == bulletinBoard.Id);
+                _meshContext.Bulletins.FirstOrDefault(b => b.Title == request.bulletinName && b.BoardId == bulletinBoard.Id);
             if (bulletin != null)
             {
                 return JsonReturnHelper.ErrorReturn(411, "Bulletin already exists.");
@@ -142,14 +151,14 @@ namespace MeshBackend.Controllers
             //Create the bulletin
             var newBulletin = new Bulletin()
             {
-                Title = bulletinName,
-                Content = description,
+                Title = request.bulletinName,
+                Content = request.description,
                 BoardId = bulletinBoard.Id
             };
                 
             //Update feed
             var feedUsers = _meshContext.Develops
-                .Where(d => d.ProjectId == projectId)
+                .Where(d => d.ProjectId == request.projectId)
                 .ToList();
             
             //Start Transaction to save the bulletin
@@ -202,33 +211,33 @@ namespace MeshBackend.Controllers
         }
 
         [HttpDelete]
-        public JsonResult DeleteBulletin(int bulletinId, string username, int projectId)
+        public JsonResult DeleteBulletin(BulletinRequest request)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = CheckUsername(request.username);
             if (checkResult != null)
             {
                 return checkResult;
             }
             
-            if (!CornerCaseCheckHelper.Check(bulletinId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.bulletinId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(401, "Invalid bulletinId.");
             }
             
             
-            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.projectId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(401, "Invalid projectId.");
             }
             
             //Check if target bulletin exists 
-            var user = _meshContext.Users.First(u => u.Email == username);
-            var project = _meshContext.Projects.Find(projectId);
+            var user = _meshContext.Users.First(u => u.Email == request.username);
+            var project = _meshContext.Projects.Find(request.projectId);
             if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(420, "Project does not exist.");
             }
-            var bulletin = _meshContext.Bulletins.Find(bulletinId);
+            var bulletin = _meshContext.Bulletins.Find(request.bulletinId);
             if (bulletin == null)
             {
                 return JsonReturnHelper.ErrorReturn(401, "Bulletin does not exist.");
@@ -256,39 +265,38 @@ namespace MeshBackend.Controllers
         }
 
         [HttpPatch]
-        public JsonResult UpdateBulletin(int bulletinId, string username, int projectId, string bulletinName,
-            string description)
+        public JsonResult UpdateBulletin(BulletinRequest request)
         {
-            var checkUsername = CheckUsername(username);
+            var checkUsername = CheckUsername(request.username);
             if (checkUsername != null)
             {
                 return checkUsername;
             }
 
-            if (!CornerCaseCheckHelper.Check(bulletinId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.bulletinId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(401, "Invalid bulletinId.");
             }
 
-            if (!CornerCaseCheckHelper.Check(bulletinName, 50, CornerCaseCheckHelper.Title))
+            if (!CornerCaseCheckHelper.Check(request.bulletinName, 50, CornerCaseCheckHelper.Title))
             {
                 return JsonReturnHelper.ErrorReturn(402, "Invalid bulletinName.");
             }
 
-            if (!CornerCaseCheckHelper.Check(description, 100, CornerCaseCheckHelper.Description))
+            if (!CornerCaseCheckHelper.Check(request.description, 100, CornerCaseCheckHelper.Description))
             {
                 return JsonReturnHelper.ErrorReturn(403, "Invalid Description.");
             }
 
-            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.projectId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(401, "Invalid projectId.");
             }
 
             //Check if target bulletin exists 
-            var bulletin = _meshContext.Bulletins.Find(bulletinId);
-            var project = _meshContext.Projects.Find(projectId);
-            var user = _meshContext.Users.First(u => u.Email == username);
+            var bulletin = _meshContext.Bulletins.Find(request.bulletinId);
+            var project = _meshContext.Projects.Find(request.projectId);
+            var user = _meshContext.Users.First(u => u.Email == request.username);
             if (bulletin == null || project == null)
             {
                 return JsonReturnHelper.ErrorReturn(420, "Invalid bulletinId or projectId");
@@ -302,14 +310,14 @@ namespace MeshBackend.Controllers
 
             try
             {
-                if (!bulletinName.IsNullOrEmpty())
+                if (!request.bulletinName.IsNullOrEmpty())
                 {
-                    bulletin.Title = bulletinName;
+                    bulletin.Title = request.bulletinName;
                 }
 
-                if (!description.IsNullOrEmpty())
+                if (!request.description.IsNullOrEmpty())
                 {
-                    bulletin.Content = description;
+                    bulletin.Content = request.description;
                 }
 
                 _meshContext.Bulletins.Update(bulletin);

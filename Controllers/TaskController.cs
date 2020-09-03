@@ -128,73 +128,104 @@ namespace MeshBackend.Controllers
                 .ToList();
         }
         
+        public class QueryRequest
+        {
+            public string username { get; set; }
+            public int teamId { get; set; }
+            public int projectId { get; set; }
+        }
+        
+        public class TaskRequest
+        {
+            public string username { get; set; }
+            public int projectId { get; set; }
+            public string taskName { get; set; }
+            public int taskId { get; set; }
+            public bool isFinished { get; set; }
+            public int priority { get; set; }
+            public string deadline { get; set; }
+            public string description { get; set; }
+            public string principal { get; set; }
+        }
+
+        public class SubTaskRequest
+        {
+            public string username { get; set; }
+            public int projectId { get; set; }
+            public int taskId { get; set; }
+            public string subTaskName { get; set; }
+            public string description { get; set; }
+            public string principal { get; set; }
+            public bool isFinished { get; set; }
+        }
+        
+        
         [HttpPost]
         [Route("task")]
-        public JsonResult CreateTask(string username, int projectId, string taskName, int priority, string deadline,
-            string description, string principal)
+        public JsonResult CreateTask(TaskRequest request)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = CheckUsername(request.username);
             if (checkResult != null)
             {
                 return checkResult;
             }
 
-            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.projectId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(701, "Invalid projectId.");
             }
 
-            if (!CornerCaseCheckHelper.Check(taskName, 50, CornerCaseCheckHelper.Title))
+            if (!CornerCaseCheckHelper.Check(request.taskName, 50, CornerCaseCheckHelper.Title))
             {
                 return JsonReturnHelper.ErrorReturn(601, "Invalid taskName.");
             }
 
-            if (!CornerCaseCheckHelper.Check(description, 100, CornerCaseCheckHelper.Description))
+            if (!CornerCaseCheckHelper.Check(request.description, 100, CornerCaseCheckHelper.Description))
             {
                 return JsonReturnHelper.ErrorReturn(602, "Invalid description.");
             }
 
-            if (!CornerCaseCheckHelper.Check(principal, 50, CornerCaseCheckHelper.Username))
+            if (!CornerCaseCheckHelper.Check(request.principal, 50, CornerCaseCheckHelper.Username))
             {
                 return JsonReturnHelper.ErrorReturn(101, "Invalid principal.");
             }
 
-            if (!CornerCaseCheckHelper.Check(deadline, 0, CornerCaseCheckHelper.Time))
+            if (!CornerCaseCheckHelper.Check(request.deadline, 0, CornerCaseCheckHelper.Time))
             {
                 return JsonReturnHelper.ErrorReturn(610, "Invalid deadline.");
             }
 
-            var user = _meshContext.Users.First(u => u.Email == username);
+            var user = _meshContext.Users.First(u => u.Email == request.username);
             
-            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
+            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == request.projectId);
             if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(707, "Project does not exist.");
             }
 
-            if (_permissionCheck.CheckProjectPermission(username,project) !=PermissionCheckHelper.ProjectAdmin)
+            if (_permissionCheck.CheckProjectPermission(request.username,project) !=PermissionCheckHelper.ProjectAdmin)
             {
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");
             }
             
-            var taskBoard = _meshContext.TaskBoards.First(b => b.ProjectId == projectId);
+            var taskBoard = _meshContext.TaskBoards.First(b => b.ProjectId == request.projectId);
             
-            var principalUser = _meshContext.Users.FirstOrDefault(u => u.Email == principal);
+            var principalUser = _meshContext.Users.FirstOrDefault(u => u.Email == request.principal);
             if (principalUser == null)
             {
                 return JsonReturnHelper.ErrorReturn(603, "Principal does not exist.");
             }
 
-            var endTime = Convert.ToDateTime(deadline);
+            var endTime = Convert.ToDateTime(request.deadline);
             
             
             var task = new Task()
             {
                 BoardId = taskBoard.Id,
-                Description = description,
+                Description = request.description,
                 LeaderId = principalUser.Id,
-                Name = taskName,
-                Priority = priority,
+                Name = request.taskName,
+                Priority = request.priority,
                 EndTime = endTime,
                 StartTime = DateTime.Now
             };
@@ -235,40 +266,40 @@ namespace MeshBackend.Controllers
 
         [HttpDelete]
         [Route("task")]
-        public JsonResult DeleteTask(string username, int projectId, int taskId)
+        public JsonResult DeleteTask(TaskRequest request)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = CheckUsername(request.username);
             if (checkResult != null)
             {
                 return checkResult;
             }
             
-            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.projectId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(701, "Invalid projectId.");
             }
 
-            if (!CornerCaseCheckHelper.Check(taskId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.taskId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(501, "Invalid taskId.");
             }
 
 
-            var user = _meshContext.Users.First(u => u.Email == username);
+            var user = _meshContext.Users.First(u => u.Email == request.username);
 
-            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
+            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == request.projectId);
             if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(707, "Project does not exist.");
             }
             
-            var task = _meshContext.Tasks.FirstOrDefault(t => t.Id == taskId);
+            var task = _meshContext.Tasks.FirstOrDefault(t => t.Id == request.taskId);
             if (task == null)
             {
                 return JsonReturnHelper.ErrorReturn(604, "Task does not exist.");
             }
 
-            if (_permissionCheck.CheckProjectPermission(username, project) != PermissionCheckHelper.ProjectAdmin &&
+            if (_permissionCheck.CheckProjectPermission(request.username, project) != PermissionCheckHelper.ProjectAdmin &&
                 task.LeaderId != user.Id)
             {
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");
@@ -290,76 +321,75 @@ namespace MeshBackend.Controllers
 
         [HttpPatch]
         [Route("task")]
-        public JsonResult UpdateTask(string username, int projectId, int taskId, bool isFinished, int priority,
-            string deadline, string description, string principal)
+        public JsonResult UpdateTask(TaskRequest request)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = CheckUsername(request.username);
             if (checkResult != null)
             {
                 return checkResult;
             }
 
-            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.projectId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(701, "Invalid projectId.");
             }
 
-            if (!CornerCaseCheckHelper.Check(taskId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.taskId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(501, "Invalid taskId.");
             }
 
-            if (!CornerCaseCheckHelper.Check(description, 100, CornerCaseCheckHelper.Description))
+            if (!CornerCaseCheckHelper.Check(request.description, 100, CornerCaseCheckHelper.Description))
             {
                 return JsonReturnHelper.ErrorReturn(602, "Invalid description.");
             }
 
-            if (!CornerCaseCheckHelper.Check(principal, 50, CornerCaseCheckHelper.Username))
+            if (!CornerCaseCheckHelper.Check(request.principal, 50, CornerCaseCheckHelper.Username))
             {
                 return JsonReturnHelper.ErrorReturn(101, "Invalid principal.");
             }
 
-            if (!CornerCaseCheckHelper.Check(deadline, 0, CornerCaseCheckHelper.Time))
+            if (!CornerCaseCheckHelper.Check(request.deadline, 0, CornerCaseCheckHelper.Time))
             {
                 return JsonReturnHelper.ErrorReturn(610, "Invalid deadline.");
             }
             
             
-            var user = _meshContext.Users.First(u => u.Email == username);
+            var user = _meshContext.Users.First(u => u.Email == request.username);
 
-            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
+            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == request.projectId);
             if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(707, "Project does not exist.");
             }
             
-            var task = _meshContext.Tasks.FirstOrDefault(t => t.Id == taskId);
+            var task = _meshContext.Tasks.FirstOrDefault(t => t.Id == request.taskId);
             if (task == null)
             {
                 return JsonReturnHelper.ErrorReturn(604, "Task does not exist.");
             }
 
-            if (_permissionCheck.CheckProjectPermission(username, project) != PermissionCheckHelper.ProjectAdmin &&
+            if (_permissionCheck.CheckProjectPermission(request.username, project) != PermissionCheckHelper.ProjectAdmin &&
                 task.LeaderId != user.Id)
             {
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");
             }
 
-            var principalUser = _meshContext.Users.FirstOrDefault(u => u.Email == principal);
-            if (principalUser == null || _permissionCheck.CheckProjectPermission(principal, project) ==
+            var principalUser = _meshContext.Users.FirstOrDefault(u => u.Email == request.principal);
+            if (principalUser == null || _permissionCheck.CheckProjectPermission(request.principal, project) ==
                 PermissionCheckHelper.ProjectOutsider)
             {
                 return JsonReturnHelper.ErrorReturn(608, "Principal does not exist.");
             }
 
-            var endTime = Convert.ToDateTime(deadline);
+            var endTime = Convert.ToDateTime(request.deadline);
 
             try
             {
-                task.Finished = isFinished;
-                task.Priority = priority;
+                task.Finished = request.isFinished;
+                task.Priority = request.priority;
                 task.EndTime = endTime;
-                task.Description = description;
+                task.Description = request.description;
                 task.LeaderId = principalUser.Id;
                 _meshContext.Tasks.Update(task);
                 _meshContext.SaveChanges();
@@ -387,66 +417,65 @@ namespace MeshBackend.Controllers
 
         [HttpPost]
         [Route("subtask")]
-        public JsonResult CreateSubTask(string username, int projectId, int taskId, string subTaskName,
-            string description, string principal)
+        public JsonResult CreateSubTask(SubTaskRequest request)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = CheckUsername(request.username);
             if (checkResult != null)
             {
                 return checkResult;
             }
             
-            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.projectId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(701, "Invalid projectId.");
             }
 
-            if (!CornerCaseCheckHelper.Check(taskId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.taskId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(501, "Invalid taskId.");
             }
 
-            if (!CornerCaseCheckHelper.Check(subTaskName, 50, CornerCaseCheckHelper.Title))
+            if (!CornerCaseCheckHelper.Check(request.subTaskName, 50, CornerCaseCheckHelper.Title))
             {
                 return JsonReturnHelper.ErrorReturn(511, "Invalid subTaskName.");
             }
 
-            if (!CornerCaseCheckHelper.Check(description, 100, CornerCaseCheckHelper.Description))
+            if (!CornerCaseCheckHelper.Check(request.description, 100, CornerCaseCheckHelper.Description))
             {
                 return JsonReturnHelper.ErrorReturn(602, "Invalid description.");
             }
 
-            if (!CornerCaseCheckHelper.Check(principal, 50, CornerCaseCheckHelper.Username))
+            if (!CornerCaseCheckHelper.Check(request.principal, 50, CornerCaseCheckHelper.Username))
             {
                 return JsonReturnHelper.ErrorReturn(101, "Invalid principal.");
             }
             
-            var user = _meshContext.Users.First(u => u.Email == username);
+            var user = _meshContext.Users.First(u => u.Email == request.username);
 
-            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
+            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == request.projectId);
             if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(707, "Project does not exist.");
             }
             
-            var task = _meshContext.Tasks.FirstOrDefault(t => t.Id == taskId);
+            var task = _meshContext.Tasks.FirstOrDefault(t => t.Id == request.taskId);
             if (task == null)
             {
                 return JsonReturnHelper.ErrorReturn(604, "Task does not exist.");
             }
 
-            if (_permissionCheck.CheckProjectPermission(username,project) !=PermissionCheckHelper.ProjectAdmin)
+            if (_permissionCheck.CheckProjectPermission(request.username,project) !=PermissionCheckHelper.ProjectAdmin)
             {
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");
             }
 
-            var subTask = _meshContext.Subtasks.FirstOrDefault(s => s.TaskId == task.Id && s.Title == subTaskName);
+            var subTask = _meshContext.Subtasks.FirstOrDefault(s => s.TaskId == task.Id && s.Title == request.subTaskName);
             if (subTask != null)
             {
                 return JsonReturnHelper.ErrorReturn(608, "subTaskName already exists.");
             }
 
-            var principalUser = _meshContext.Users.FirstOrDefault(u => u.Email == principal);
+            var principalUser = _meshContext.Users.FirstOrDefault(u => u.Email == request.principal);
             if (principalUser == null)
             {
                 return JsonReturnHelper.ErrorReturn(603, "Principal does not exist.");
@@ -455,8 +484,8 @@ namespace MeshBackend.Controllers
             var newSubTask = new Subtask()
             {
                 TaskId = task.Id,
-                Title = subTaskName,
-                Description = description
+                Title = request.subTaskName,
+                Description = request.description
             };
             
             using (var transaction = _meshContext.Database.BeginTransaction())
@@ -495,52 +524,52 @@ namespace MeshBackend.Controllers
 
         [HttpDelete]
         [Route("subtask")]
-        public JsonResult DeleteSubTask(string username, int projectId, int taskId, string subTaskName)
+        public JsonResult DeleteSubTask(SubTaskRequest request)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = CheckUsername(request.username);
             if (checkResult != null)
             {
                 return checkResult;
             }
             
-            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.projectId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(701, "Invalid projectId.");
             }
 
-            if (!CornerCaseCheckHelper.Check(taskId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.taskId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(501, "Invalid taskId.");
             }
 
-            if (!CornerCaseCheckHelper.Check(subTaskName, 50, CornerCaseCheckHelper.Title))
+            if (!CornerCaseCheckHelper.Check(request.subTaskName, 50, CornerCaseCheckHelper.Title))
             {
                 return JsonReturnHelper.ErrorReturn(511, "Invalid subTaskName.");
             }
 
-            var user = _meshContext.Users.First(u => u.Email == username);
+            var user = _meshContext.Users.First(u => u.Email == request.username);
 
-            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
+            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == request.projectId);
             if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(707, "Project does not exist.");
             }
 
 
-            var task = _meshContext.Tasks.FirstOrDefault(t => t.Id == taskId);
+            var task = _meshContext.Tasks.FirstOrDefault(t => t.Id == request.taskId);
             if (task == null)
             {
                 return JsonReturnHelper.ErrorReturn(604, "Task does not exist.");
             }
             
 
-            if (_permissionCheck.CheckProjectPermission(username, project) != PermissionCheckHelper.ProjectAdmin &&
+            if (_permissionCheck.CheckProjectPermission(request.username, project) != PermissionCheckHelper.ProjectAdmin &&
                 task.LeaderId != user.Id)
             {
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");
             }
             
-            var subTask = _meshContext.Subtasks.FirstOrDefault(s => s.TaskId == taskId && s.Title == subTaskName);
+            var subTask = _meshContext.Subtasks.FirstOrDefault(s => s.TaskId == request.taskId && s.Title == request.subTaskName);
             if (subTask == null)
             {
                 return JsonReturnHelper.ErrorReturn(606, "SubTask does not exist.");
@@ -562,69 +591,68 @@ namespace MeshBackend.Controllers
 
         [HttpPatch]
         [Route("subtask")]
-        public JsonResult UpdateSubTask(string username, int projectId, int taskId, string subTaskName, bool isFinished,
-            string description, string principal)
+        public JsonResult UpdateSubTask(SubTaskRequest request)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = CheckUsername(request.username);
             if (checkResult != null)
             {
                 return checkResult;
             }
 
-            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.projectId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(701, "Invalid projectId.");
             }
 
-            if (!CornerCaseCheckHelper.Check(taskId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.taskId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(501, "Invalid taskId.");
             }
 
-            if (!CornerCaseCheckHelper.Check(subTaskName, 50, CornerCaseCheckHelper.Title))
+            if (!CornerCaseCheckHelper.Check(request.subTaskName, 50, CornerCaseCheckHelper.Title))
             {
                 return JsonReturnHelper.ErrorReturn(511, "Invalid subTaskName.");
             }
 
-            if (!CornerCaseCheckHelper.Check(description, 100, CornerCaseCheckHelper.Description))
+            if (!CornerCaseCheckHelper.Check(request.description, 100, CornerCaseCheckHelper.Description))
             {
                 return JsonReturnHelper.ErrorReturn(602, "Invalid description.");
             }
 
-            if (!CornerCaseCheckHelper.Check(principal, 50, CornerCaseCheckHelper.Username))
+            if (!CornerCaseCheckHelper.Check(request.principal, 50, CornerCaseCheckHelper.Username))
             {
                 return JsonReturnHelper.ErrorReturn(101, "Invalid principal.");
             }
 
             
-            var user = _meshContext.Users.First(u => u.Email == username);
+            var user = _meshContext.Users.First(u => u.Email == request.username);
 
-            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
+            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == request.projectId);
             if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(707, "Project does not exist.");
             }
 
-            var task = _meshContext.Tasks.FirstOrDefault(t => t.Id == taskId);
+            var task = _meshContext.Tasks.FirstOrDefault(t => t.Id == request.taskId);
             if (task == null)
             {
                 return JsonReturnHelper.ErrorReturn(604, "Task does not exist.");
             }
 
-            if (_permissionCheck.CheckProjectPermission(username, project) != PermissionCheckHelper.ProjectAdmin &&
+            if (_permissionCheck.CheckProjectPermission(request.username, project) != PermissionCheckHelper.ProjectAdmin &&
                 task.LeaderId != user.Id)
             {
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");
             }
 
-            var principalUser = _meshContext.Users.FirstOrDefault(u => u.Email == principal);
-            if (principalUser == null || _permissionCheck.CheckProjectPermission(principal, project) ==
+            var principalUser = _meshContext.Users.FirstOrDefault(u => u.Email == request.principal);
+            if (principalUser == null || _permissionCheck.CheckProjectPermission(request.principal, project) ==
                 PermissionCheckHelper.ProjectOutsider)
             {
                 return JsonReturnHelper.ErrorReturn(608, "Principal does not exist.");
             }
 
-            var subTask = _meshContext.Subtasks.FirstOrDefault(s => s.TaskId == taskId && s.Title == subTaskName);
+            var subTask = _meshContext.Subtasks.FirstOrDefault(s => s.TaskId == request.taskId && s.Title == request.subTaskName);
             if (subTask == null)
             {
                 return JsonReturnHelper.ErrorReturn(606, "SubTask does not exist.");
@@ -634,8 +662,8 @@ namespace MeshBackend.Controllers
 
             try
             {
-                subTask.Finished = isFinished;
-                subTask.Description = description;
+                subTask.Finished = request.isFinished;
+                subTask.Description = request.description;
                 _meshContext.Update(subTask);
                 _meshContext.Assigns.Remove(assign);
                 _meshContext.Assigns.Add(new Assign()
@@ -667,33 +695,33 @@ namespace MeshBackend.Controllers
 
         [HttpGet]
         [Route("task/project")]
-        public JsonResult QueryProjectTasks(string username, int projectId)
+        public JsonResult QueryProjectTask(QueryRequest request)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = CheckUsername(request.username);
             if (checkResult != null)
             {
                 return checkResult;
             }
 
-            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.projectId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(701, "Invalid projectId.");
             }
 
-            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
+            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == request.projectId);
             if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(707, "Invalid projectId.");
             }
 
-            if (_permissionCheck.CheckProjectPermission(username, project) == PermissionCheckHelper.ProjectOutsider)
+            if (_permissionCheck.CheckProjectPermission(request.username, project) == PermissionCheckHelper.ProjectOutsider)
             {
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");
             }
 
             var founder = _meshContext.Users.First(u => u.Id == project.AdminId);
             
-            var board = _meshContext.TaskBoards.First(b => b.ProjectId == projectId);
+            var board = _meshContext.TaskBoards.First(b => b.ProjectId == request.projectId);
             var tasks = _meshContext.Tasks
                 .Where(s => s.BoardId == board.Id)
                 .Select(s=>new TaskInfo()
@@ -727,29 +755,29 @@ namespace MeshBackend.Controllers
 
         [HttpGet]
         [Route("task/team")]
-        public JsonResult QueryTeamTasks(string username, int teamId)
+        public JsonResult QueryTeamTasks(QueryRequest request)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = CheckUsername(request.username);
             if (checkResult != null)
             {
                 return checkResult;
             }
 
-            if (!CornerCaseCheckHelper.Check(teamId,0,CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(request.teamId,0,CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(301, "Invalid teamId.");
             }
             
 
-            var user = _meshContext.Users.First(u => u.Email == username);
+            var user = _meshContext.Users.First(u => u.Email == request.username);
 
-            var team = _meshContext.Teams.FirstOrDefault(t => t.Id == teamId);
+            var team = _meshContext.Teams.FirstOrDefault(t => t.Id == request.teamId);
             if (team == null)
             {
                 return JsonReturnHelper.ErrorReturn(302, "Invalid teamId.");
             }
 
-            if (_permissionCheck.CheckTeamPermission(username, team) == PermissionCheckHelper.TeamOutsider)
+            if (_permissionCheck.CheckTeamPermission(request.username, team) == PermissionCheckHelper.TeamOutsider)
             {
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");
             }

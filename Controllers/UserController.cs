@@ -27,6 +27,20 @@ namespace MeshBackend.Controllers
             _logger = logger;
             _meshContext = meshContext;
         }
+
+
+        public class RegisterRequest
+        {
+            public string username { get; set; }
+            public string password { get; set; }
+        }
+        
+        public class LoginRequest
+        {
+            public string username { get; set; }
+            public string password { get; set; }
+            public string token { get; set; }
+        }
         
         public bool CheckUserSession(string username)
         {
@@ -93,24 +107,24 @@ namespace MeshBackend.Controllers
         
         [HttpPost]
         [Route("register")]
-        public JsonResult Register(string username, string password)
+        public JsonResult Register(RegisterRequest request)
         {
-            if (!CornerCaseCheckHelper.Check(username,50,CornerCaseCheckHelper.Username))
+            if (!CornerCaseCheckHelper.Check(request.username,50,CornerCaseCheckHelper.Username))
             {
                 return JsonReturnHelper.ErrorReturn(104, "Invalid username");
             }
             
-            var user = _meshContext.Users.FirstOrDefault(u => u.Email == username);
+            var user = _meshContext.Users.FirstOrDefault(u => u.Email == request.username);
             if (user != null)
             {
                 return JsonReturnHelper.ErrorReturn(101, "User already exists.");
             }
-            HashPassword hashPassword = GetHashPassword(password);
+            HashPassword hashPassword = GetHashPassword(request.password);
             //Create new user
             var newUser = new User()
             {
-                Email = username,
-                Nickname = username,
+                Email = request.username,
+                Nickname = request.username,
                 PasswordDigest = hashPassword.PasswordDigest,
                 PasswordSalt = hashPassword.PasswordSalt
             };
@@ -132,7 +146,7 @@ namespace MeshBackend.Controllers
                 data = new
                 {
                     isSuccess = true,
-                    username = username,
+                    username = request.username,
                     role = "user",
                 },
             });
@@ -142,17 +156,17 @@ namespace MeshBackend.Controllers
         
         [HttpPost]
         [Route("login")]
-        public JsonResult Login(string username, string password, string token)
+        public JsonResult Login(LoginRequest request)
         {
-            if (!CornerCaseCheckHelper.Check(username,50,CornerCaseCheckHelper.Username))
+            if (!CornerCaseCheckHelper.Check(request.username,50,CornerCaseCheckHelper.Username))
             {
                 return JsonReturnHelper.ErrorReturn(104, "Invalid username");
             }
             
-            var user = _meshContext.Users.FirstOrDefault(u => u.Email == username);
+            var user = _meshContext.Users.FirstOrDefault(u => u.Email == request.username);
             
             //Check Password
-            if (user == null|| !CheckHashPassword(password, user.PasswordSalt, user.PasswordDigest))
+            if (user == null|| !CheckHashPassword(request.password, user.PasswordSalt, user.PasswordDigest))
             {
                 return JsonReturnHelper.ErrorReturn(201, "Incorrect username or password.");
             }
@@ -173,8 +187,14 @@ namespace MeshBackend.Controllers
                         TeamName = t.Name,
                         AdminId = t.AdminId
                     }).ToList();
-            var preferenceTeamCount = cooperation.Max(a => a.AccessCount);
-            var preferenceTeam = cooperation.First(c => c.AccessCount == preferenceTeamCount);
+
+            var preferenceTeamId = -1;
+            if (cooperation.FirstOrDefault() != null)
+            {
+                var preferenceTeamCount = cooperation.DefaultIfEmpty().Max(a => a.AccessCount);
+                preferenceTeamId = cooperation.First(c => c.AccessCount == preferenceTeamCount).TeamId;
+            }
+
 
             return Json(new
             {
@@ -182,7 +202,7 @@ namespace MeshBackend.Controllers
                 data = new
                 {
                     isSuccess = true,
-                    username = username,
+                    username = request.username,
                     role = "user",
                     token = "",
                     avatar = user.Avatar,
@@ -191,7 +211,7 @@ namespace MeshBackend.Controllers
                       preferenceShowMode = user.RevealedPreference,
                       preferenceColor = user.ColorPreference,
                       preferenceLayout = user.LayoutPreference,
-                      preferenceTeam = preferenceTeam.TeamId
+                      preferenceTeam = preferenceTeamId
                     },
                     teams = teams
                 },

@@ -32,26 +32,34 @@ namespace MeshBackend.Controllers
             return HttpContext.Session.GetString(username) == null ? JsonReturnHelper.ErrorReturn(2, "User status error.") : null;
         }
 
+        public class PreferenceRequest
+        {
+            public string username { get; set; }
+            public string preferenceColor { get; set; }
+            public string preferenceLayout { get; set; }
+            public string showMode { get; set; }
+        }
+        
         [HttpPost]
         [Route("color")]
-        public JsonResult PreferenceColor(string username, string preferenceColor)
+        public JsonResult PreferenceColor(PreferenceRequest request)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = CheckUsername(request.username);
             if (checkResult != null)
             {
                 return checkResult;
             }
 
-            if (!CornerCaseCheckHelper.Check(preferenceColor, 50, CornerCaseCheckHelper.Title))
+            if (!CornerCaseCheckHelper.Check(request.preferenceColor, 50, CornerCaseCheckHelper.Title))
             {
                 return JsonReturnHelper.ErrorReturn(110, "Invalid preferenceColor");
             }
             
 
-            var user = _meshContext.Users.First(u => u.Email == username);
+            var user = _meshContext.Users.First(u => u.Email == request.username);
             try
             {
-                user.ColorPreference = preferenceColor;
+                user.ColorPreference = request.preferenceColor;
                 _meshContext.Users.Update(user);
                 _meshContext.SaveChanges();
             }
@@ -66,23 +74,23 @@ namespace MeshBackend.Controllers
 
         [HttpPost]
         [Route("layout")]
-        public JsonResult PreferenceLayout(string username, string preferenceLayout)
+        public JsonResult PreferenceLayout(PreferenceRequest request)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = CheckUsername(request.username);
             if (checkResult != null)
             {
                 return checkResult;
             }
 
-            if (!CornerCaseCheckHelper.Check(preferenceLayout, 50, CornerCaseCheckHelper.Title))
+            if (!CornerCaseCheckHelper.Check(request.preferenceLayout, 50, CornerCaseCheckHelper.Title))
             {
                 return JsonReturnHelper.ErrorReturn(111, "Invalid preferenceLayout");
             }
             
-            var user = _meshContext.Users.First(u => u.Email == username);
+            var user = _meshContext.Users.First(u => u.Email == request.username);
             try
             {
-                user.LayoutPreference = preferenceLayout;
+                user.LayoutPreference = request.preferenceLayout;
                 _meshContext.Users.Update(user);
                 _meshContext.SaveChanges();
             }
@@ -97,23 +105,23 @@ namespace MeshBackend.Controllers
 
         [HttpPost]
         [Route("show-mode")]
-        public JsonResult PreferenceShowMode(string username, string showMode)
+        public JsonResult PreferenceShowMode(PreferenceRequest request)
         {
-            var checkResult = CheckUsername(username);
+            var checkResult = CheckUsername(request.username);
             if (checkResult != null)
             {
                 return checkResult;
             }
             
-            if (!CornerCaseCheckHelper.Check(showMode, 50, CornerCaseCheckHelper.Title))
+            if (!CornerCaseCheckHelper.Check(request.showMode, 50, CornerCaseCheckHelper.Title))
             {
                 return JsonReturnHelper.ErrorReturn(112, "Invalid showMode");
             }
 
-            var user = _meshContext.Users.First(u => u.Email == username);
+            var user = _meshContext.Users.First(u => u.Email == request.username);
             try
             {
-                user.RevealedPreference = showMode;
+                user.RevealedPreference = request.showMode;
                 _meshContext.Users.Update(user);
                 _meshContext.SaveChanges();
             }

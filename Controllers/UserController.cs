@@ -113,6 +113,11 @@ namespace MeshBackend.Controllers
             {
                 return JsonReturnHelper.ErrorReturn(104, "Invalid username");
             }
+
+            if (!CornerCaseCheckHelper.Check(request.password, 0, CornerCaseCheckHelper.PassWord))
+            {
+                return JsonReturnHelper.ErrorReturn(111, "Invalid password.");
+            }
             
             var user = _meshContext.Users.FirstOrDefault(u => u.Email == request.username);
             if (user != null)
@@ -163,6 +168,11 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(104, "Invalid username");
             }
             
+            if (!CornerCaseCheckHelper.Check(request.password, 0, CornerCaseCheckHelper.PassWord))
+            {
+                return JsonReturnHelper.ErrorReturn(111, "Invalid password.");
+            }
+
             var user = _meshContext.Users.FirstOrDefault(u => u.Email == request.username);
             
             //Check Password

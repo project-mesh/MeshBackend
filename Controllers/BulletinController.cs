@@ -310,16 +310,8 @@ namespace MeshBackend.Controllers
 
             try
             {
-                if (!request.bulletinName.IsNullOrEmpty())
-                {
-                    bulletin.Title = request.bulletinName;
-                }
-
-                if (!request.description.IsNullOrEmpty())
-                {
-                    bulletin.Content = request.description;
-                }
-
+                bulletin.Title = request.bulletinName;
+                bulletin.Content = request.description;
                 _meshContext.Bulletins.Update(bulletin);
                 _meshContext.SaveChanges();
             }

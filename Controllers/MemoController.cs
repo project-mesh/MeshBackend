@@ -466,16 +466,8 @@ namespace MeshBackend.Controllers
             
             try
             {
-                if (!request.knowledgeName.IsNullOrEmpty())
-                {
-                    knowledge.Title = request.knowledgeName;
-                }
-
-                if (!request.hyperlink.IsNullOrEmpty())
-                {
-                    knowledge.Text = request.hyperlink;
-                }
-
+                knowledge.Title = request.knowledgeName;
+                knowledge.Text = request.hyperlink;
                 _meshContext.ProjectMemos.Update(knowledge);
                 _meshContext.SaveChanges();
             }
@@ -546,16 +538,8 @@ namespace MeshBackend.Controllers
             
             try
             {
-                if (!request.knowledgeName.IsNullOrEmpty())
-                {
-                    knowledge.Title = request.knowledgeName;
-                }
-
-                if (!request.hyperlink.IsNullOrEmpty())
-                {
-                    knowledge.Text = request.hyperlink;
-                }
-
+                knowledge.Title = request.knowledgeName;
+                knowledge.Text = request.hyperlink;
                 _meshContext.TeamMemos.Update(knowledge);
                 _meshContext.SaveChanges();
             }

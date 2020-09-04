@@ -47,6 +47,7 @@ namespace MeshBackend.Controllers
             {
                 return JsonReturnHelper.ErrorReturn(104, "Invalid username.");
             }
+  
             return HttpContext.Session.GetString(username) == null ? JsonReturnHelper.ErrorReturn(2, "User status error.") : null;
         }
 
@@ -170,13 +171,7 @@ namespace MeshBackend.Controllers
             {
                 return JsonReturnHelper.ErrorReturn(310, "Invalid teamName.");
             }
-
-            var team = _meshContext.Teams.FirstOrDefault(t => t.Name == request.teamName);
-            if (team != null)
-            {
-                return JsonReturnHelper.ErrorReturn(301, "TeamName already exists.");
-            }
-
+            
             var user = _meshContext.Users.First(u => u.Email == request.username);
             var createdTeam = new Team()
             {

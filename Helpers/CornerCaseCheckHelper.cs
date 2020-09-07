@@ -12,6 +12,7 @@ namespace MeshBackend.Helpers
         public const int Description = 2;
         public const int Id = 4;
         public const int Time = 5;
+        public const int PassWord = 6;
 
         public static bool Check(object target, int limit,int attr)
         {
@@ -43,8 +44,10 @@ namespace MeshBackend.Helpers
                     {
                         return false;
                     }
-
                     return true;
+                case PassWord:
+                    var password = target.ToString();
+                    return !password.IsNullOrEmpty();
                 default:
                     return false;
             }

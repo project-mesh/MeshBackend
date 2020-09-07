@@ -7,6 +7,8 @@ services:
       MYSQL_PASSWORD: mesh
       MYSQL_DATABASE: mesh
       MYSQL_USER: mesh
+    volumes:
+      - /my/own/datadir:/var/lib/mysql
 
   app:
     build:

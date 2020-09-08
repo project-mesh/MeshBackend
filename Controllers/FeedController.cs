@@ -43,15 +43,15 @@ namespace MeshBackend.Controllers
         }
         
         [HttpGet]
-        public JsonResult QueryNotification(FeedRequest request)
+        public JsonResult QueryNotification(string username)
         {
-            var checkResult = CheckUsername(request.username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
             }
 
-            var user = _meshContext.Users.First(u => u.Email==request.username);
+            var user = _meshContext.Users.First(u => u.Email==username);
 
             var bulletinFeeds = _meshContext.BulletinFeeds
                 .Where(f => f.UserId == user.Id)
@@ -115,26 +115,26 @@ namespace MeshBackend.Controllers
         }
 
         [HttpDelete]
-        public JsonResult DeleteNotification(FeedRequest request)
+        public JsonResult DeleteNotification(string username, int type, int id)
         {
-            var checkResult = CheckUsername(request.username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
             }
 
-            if (!CornerCaseCheckHelper.Check(request.id, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(id, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(910, "Invalid Id");
             }
-            var user = _meshContext.Users.First(u => u.Email == request.username);
+            var user = _meshContext.Users.First(u => u.Email == username);
 
-            switch (request.type)
+            switch (type)
             {
                 case BULLETIN:
                 {
                     var bulletin =
-                        _meshContext.BulletinFeeds.FirstOrDefault(f => f.BulletinId == request.id && f.UserId == user.Id);
+                        _meshContext.BulletinFeeds.FirstOrDefault(f => f.BulletinId == id && f.UserId == user.Id);
                     if (bulletin == null)
                     {
                         return JsonReturnHelper.ErrorReturn(901, "Invalid bulletinId");
@@ -155,7 +155,7 @@ namespace MeshBackend.Controllers
                 }
                 case TASK:
                 {
-                    var task = _meshContext.TaskFeeds.FirstOrDefault(f => f.TaskId == request.id && f.UserId == user.Id);
+                    var task = _meshContext.TaskFeeds.FirstOrDefault(f => f.TaskId == id && f.UserId == user.Id);
                     if (task == null)
                     {
                         return JsonReturnHelper.ErrorReturn(902, "Invalid TaskId");

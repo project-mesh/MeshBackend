@@ -63,23 +63,23 @@ namespace MeshBackend.Controllers
         
 
         [HttpGet]
-        public JsonResult QueryBulletin(BulletinRequest request)
+        public JsonResult QueryBulletin(string username, int projectId)
         {
-            var checkUsername = CheckUsername(request.username);
+            var checkUsername = CheckUsername(username);
             if (checkUsername != null)
             {
                 return checkUsername;
             }
 
             //Find the target project
-            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == request.projectId);
+            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
             if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(401, "Invalid projectId.");
             }
 
             var bulletins = _meshContext.BulletinBoards
-                .Where(b => b.ProjectId == request.projectId)
+                .Where(b => b.ProjectId == projectId)
                 .Join(_meshContext.Bulletins, bb => bb.Id, b => b.BoardId, (bb, b) => new
                 {
                     Id = b.Id,
@@ -211,33 +211,33 @@ namespace MeshBackend.Controllers
         }
 
         [HttpDelete]
-        public JsonResult DeleteBulletin(BulletinRequest request)
+        public JsonResult DeleteBulletin(string username, int projectId, int bulletinId)
         {
-            var checkResult = CheckUsername(request.username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
             }
             
-            if (!CornerCaseCheckHelper.Check(request.bulletinId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(bulletinId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(401, "Invalid bulletinId.");
             }
             
             
-            if (!CornerCaseCheckHelper.Check(request.projectId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(401, "Invalid projectId.");
             }
             
             //Check if target bulletin exists 
-            var user = _meshContext.Users.First(u => u.Email == request.username);
-            var project = _meshContext.Projects.Find(request.projectId);
+            var user = _meshContext.Users.First(u => u.Email == username);
+            var project = _meshContext.Projects.Find(projectId);
             if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(420, "Project does not exist.");
             }
-            var bulletin = _meshContext.Bulletins.Find(request.bulletinId);
+            var bulletin = _meshContext.Bulletins.Find(bulletinId);
             if (bulletin == null)
             {
                 return JsonReturnHelper.ErrorReturn(401, "Bulletin does not exist.");

@@ -191,48 +191,48 @@ namespace MeshBackend.Controllers
         }
 
         [HttpDelete]
-        public JsonResult DeleteProject(ProjectRequest request)
+        public JsonResult DeleteProject(string username, int teamId, int projectId)
         {
-            var checkResult = CheckUsername(request.username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
             }
             
-            if (!CornerCaseCheckHelper.Check(request.teamId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(teamId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(301, "Invalid teamId.");
             }
             
-            if (!CornerCaseCheckHelper.Check(request.projectId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(701, "Invalid projectId.");
             }
             
             
             //Check if team exists
-            var team = _meshContext.Teams.FirstOrDefault(t => t.Id == request.teamId);
+            var team = _meshContext.Teams.FirstOrDefault(t => t.Id == teamId);
             if (team == null)
             {
                 return JsonReturnHelper.ErrorReturn(302, "Invalid teamId.");
             }
             
             //Check if project exists
-            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == request.projectId);
+            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
             if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(707, "Invalid projectId.");
             }
             
             //Check if user in the team
-            var teamCheckResult = _permissionCheck.CheckTeamPermission(request.username, team);
+            var teamCheckResult = _permissionCheck.CheckTeamPermission(username, team);
             if (teamCheckResult ==PermissionCheckHelper.TeamOutsider)
             {
                 return JsonReturnHelper.ErrorReturn(702, "Invalid username.");
             }
             
             //Check if user is the admin of the project
-            var projectCheckResult = _permissionCheck.CheckProjectPermission(request.username, project);
+            var projectCheckResult = _permissionCheck.CheckProjectPermission(username, project);
             if (projectCheckResult != PermissionCheckHelper.ProjectAdmin)
             {
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");
@@ -339,23 +339,23 @@ namespace MeshBackend.Controllers
         }
 
         [HttpGet]
-        public JsonResult QueryProject(ProjectRequest request)
+        public JsonResult QueryProject(string username, int projectId)
         {
-            var checkResult = CheckUsername(request.username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
             }
 
             //Check if project exists
-            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == request.projectId);
+            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
             if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(707, "Invalid projectId.");
             }
             
             //Check if user is in the project
-            var projectCheckResult = _permissionCheck.CheckProjectPermission(request.username, project);
+            var projectCheckResult = _permissionCheck.CheckProjectPermission(username, project);
             if (projectCheckResult == PermissionCheckHelper.ProjectOutsider)
             {
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");

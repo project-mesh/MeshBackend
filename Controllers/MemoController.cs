@@ -219,41 +219,41 @@ namespace MeshBackend.Controllers
 
         [HttpDelete]
         [Route("project")]
-        public JsonResult DeleteProjectKB(MemoRequest request)
+        public JsonResult DeleteProjectKB(string username, int projectId, int knowledgeId)
         {
-            var checkResult = CheckUsername(request.username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
             }
 
-            if (!CornerCaseCheckHelper.Check(request.projectId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(701, "Invalid projectId.");
             }
 
-            if (!CornerCaseCheckHelper.Check(request.knowledgeId, 50, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(knowledgeId, 50, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(807, "Invalid knowledgeId.");
             }
 
-            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == request.projectId);
+            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
             if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(707, "Project does not exist.");
             }
 
-            var memoCollection = _meshContext.ProjectMemoCollections.First(p => p.ProjectId == request.projectId);
+            var memoCollection = _meshContext.ProjectMemoCollections.First(p => p.ProjectId == projectId);
             var knowledge =
                 _meshContext.ProjectMemos.FirstOrDefault(
-                    m => m.Id == request.knowledgeId && m.CollectionId == memoCollection.Id);
+                    m => m.Id == knowledgeId && m.CollectionId == memoCollection.Id);
             if (knowledge == null)
             {
                 return JsonReturnHelper.ErrorReturn(805, "Invalid knowledgeId.");
             }
 
-            var user = _meshContext.Users.First(u => u.Email == request.username);
-            if (_permissionCheck.CheckProjectPermission(request.username, project) != PermissionCheckHelper.ProjectAdmin ||
+            var user = _meshContext.Users.First(u => u.Email == username);
+            if (_permissionCheck.CheckProjectPermission(username, project) != PermissionCheckHelper.ProjectAdmin ||
                 knowledge.UserId != user.Id)
             {
                 return JsonReturnHelper.ErrorReturn(801, "Permission denied.");
@@ -275,41 +275,41 @@ namespace MeshBackend.Controllers
         
         [HttpDelete]
         [Route("team")]
-        public JsonResult DeleteTeamKB(MemoRequest request)
+        public JsonResult DeleteTeamKB(string username, int teamId, int knowledgeId)
         {
-            var checkResult = CheckUsername(request.username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
             }
             
-            if (!CornerCaseCheckHelper.Check(request.teamId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(teamId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(301, "Invalid teamId.");
             }
 
-            if (!CornerCaseCheckHelper.Check(request.knowledgeId, 50, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(knowledgeId, 50, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(807, "Invalid knowledgeId.");
             }
 
-            var team = _meshContext.Teams.FirstOrDefault(p => p.Id == request.teamId);
+            var team = _meshContext.Teams.FirstOrDefault(p => p.Id == teamId);
             if (team == null)
             {
                 return JsonReturnHelper.ErrorReturn(302, "Team does not exist.");
             }
 
-            var memoCollection = _meshContext.TeamMemoCollections.First(p => p.TeamId == request.teamId);
+            var memoCollection = _meshContext.TeamMemoCollections.First(p => p.TeamId == teamId);
             var knowledge =
                 _meshContext.TeamMemos.FirstOrDefault(
-                    m => m.Id == request.knowledgeId && m.CollectionId == memoCollection.Id);
+                    m => m.Id == knowledgeId && m.CollectionId == memoCollection.Id);
             if (knowledge == null)
             {
                 return JsonReturnHelper.ErrorReturn(805, "Invalid knowledgeId.");
             }
             
-            var user = _meshContext.Users.First(u => u.Email == request.username);
-            if (_permissionCheck.CheckTeamPermission(request.username, team) != PermissionCheckHelper.TeamAdmin ||
+            var user = _meshContext.Users.First(u => u.Email == username);
+            if (_permissionCheck.CheckTeamPermission(username, team) != PermissionCheckHelper.TeamAdmin ||
                 knowledge.UserId != user.Id)
             {
                 return JsonReturnHelper.ErrorReturn(801, "Permission denied.");
@@ -331,27 +331,27 @@ namespace MeshBackend.Controllers
 
         [HttpGet]
         [Route("project")]
-        public JsonResult QueryProjectKB(MemoRequest request)
+        public JsonResult QueryProjectKB(string username, int projectId)
         {
-            var checkResult = CheckUsername(request.username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
             }
             
-            if (!CornerCaseCheckHelper.Check(request.projectId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(projectId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(701, "Invalid projectId.");
             }
 
             
-            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == request.projectId);
+            var project = _meshContext.Projects.FirstOrDefault(p => p.Id == projectId);
             if (project == null)
             {
                 return JsonReturnHelper.ErrorReturn(707, "Project does not exist.");
             }
             
-            if (_permissionCheck.CheckProjectPermission(request.username, project) == PermissionCheckHelper.ProjectOutsider)
+            if (_permissionCheck.CheckProjectPermission(username, project) == PermissionCheckHelper.ProjectOutsider)
             {
                 return JsonReturnHelper.ErrorReturn(801, "Permission denied.");
             }
@@ -373,27 +373,27 @@ namespace MeshBackend.Controllers
         
         [HttpGet]
         [Route("team")]
-        public JsonResult QueryTeamKB(MemoRequest request)
+        public JsonResult QueryTeamKB(string username, int teamId)
         {
-            var checkResult = CheckUsername(request.username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
             }
             
-            if (!CornerCaseCheckHelper.Check(request.teamId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(teamId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(301, "Invalid teamId.");
             }
 
             
-            var team = _meshContext.Projects.FirstOrDefault(p => p.Id == request.teamId);
+            var team = _meshContext.Projects.FirstOrDefault(p => p.Id == teamId);
             if (team == null)
             {
                 return JsonReturnHelper.ErrorReturn(302, "Team does not exist.");
             }
             
-            if (_permissionCheck.CheckProjectPermission(request.username, team) == PermissionCheckHelper.TeamOutsider)
+            if (_permissionCheck.CheckProjectPermission(username, team) == PermissionCheckHelper.TeamOutsider)
             {
                 return JsonReturnHelper.ErrorReturn(801, "Permission denied.");
             }

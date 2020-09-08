@@ -19,6 +19,8 @@ namespace MeshBackend
 {
     public class Startup
     {
+        readonly string MeshAllowSpecificOrigins = "mesh";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -38,6 +40,16 @@ namespace MeshBackend
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: MeshAllowSpecificOrigins,
+                    builder =>
+                    {
+                        builder.WithOrigins("localhost")
+                            .AllowAnyHeader()
+                            .AllowAnyMethod();
+                    });
+            });
             services.AddControllers();
         }
 
@@ -52,6 +64,8 @@ namespace MeshBackend
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors(MeshAllowSpecificOrigins);
 
             app.UseAuthorization();
             

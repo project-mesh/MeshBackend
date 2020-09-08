@@ -39,6 +39,10 @@ namespace MeshBackend.Helpers
                     try
                     {
                         var dateTime = Convert.ToDateTime(time);
+                        if (dateTime <= DateTime.Now)
+                        {
+                            return false;
+                        }
                     }
                     catch 
                     {

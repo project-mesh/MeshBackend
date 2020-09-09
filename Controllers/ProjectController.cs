@@ -42,6 +42,7 @@ namespace MeshBackend.Controllers
         {
             public int UserId { get; set; }
             public string Username { get; set; }
+            public string Nickname { get; set; }
             public string Avatar { get; set; }
         }
 
@@ -64,8 +65,9 @@ namespace MeshBackend.Controllers
                 .Join(_meshContext.Users, d => d.UserId, u => u.Id, (d, u) => new MemInfo()
                 {
                     UserId = u.Id,
-                    Username = u.Nickname,
-                    Avatar = u.Avatar
+                    Username = u.Email,
+                    Nickname = u.Nickname,
+                    Avatar = AvatarSaveHelper.GetObject(u.Avatar)
                 })
                 .ToList();
             return Json(new
@@ -151,7 +153,10 @@ namespace MeshBackend.Controllers
                 Publicity = request.isPublic
             };
 
-            var members = new List<MemInfo> {new MemInfo() {UserId = admin.Id, Username = admin.Email}};
+            var members = new List<MemInfo> {new MemInfo()
+            {
+                UserId = admin.Id, Username = admin.Email,Nickname = admin.Nickname,Avatar = AvatarSaveHelper.GetObject(admin.Avatar)
+            }};
             
             //Start a transaction to save the project
             using (var transaction = _meshContext.Database.BeginTransaction())

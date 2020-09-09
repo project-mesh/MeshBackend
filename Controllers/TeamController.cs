@@ -32,6 +32,8 @@ namespace MeshBackend.Controllers
         {
             public int Id { get; set; }
             public string Username { get; set; }
+            public string Nickname { get; set; }
+            public string Avatar { get; set; }
         }
 
         public class TeamProject
@@ -107,7 +109,9 @@ namespace MeshBackend.Controllers
                     new Member()
                     {
                         Id = u.Id,
-                        Username = u.Nickname
+                        Username = u.Email,
+                        Nickname = u.Nickname,
+                        Avatar = AvatarSaveHelper.GetObject(u.Avatar)
                     }).ToList();
 
             //Find projects of the team

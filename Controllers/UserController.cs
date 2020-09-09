@@ -10,6 +10,7 @@ using MeshBackend.Models;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace MeshBackend.Controllers
@@ -27,19 +28,67 @@ namespace MeshBackend.Controllers
             _logger = logger;
             _meshContext = meshContext;
         }
-
-
-        public class RegisterRequest
-        {
-            public string username { get; set; }
-            public string password { get; set; }
-        }
         
-        public class LoginRequest
+        
+        public class UserRequest
         {
             public string username { get; set; }
             public string password { get; set; }
             public string token { get; set; }
+            public string oldPassword { get; set; }
+        }
+        
+        public class UserInfo
+        {
+            public bool isSuccess = true;
+            public string msg = "";
+            public string username;
+            public string nickname;
+            public int gender;
+            public int status;
+            public string address;
+            public string description;
+            public string birthday;
+            public string avatar;
+            public string role;
+            public UserPreference preference;
+            public List<TeamInfo> teams;
+        }
+
+        public class UserPreference
+        {
+            public string preferenceShowMode;
+            public string preferenceColor;
+            public string preferenceLayout;
+            public int preferenceTeam;
+        }
+
+        public JsonResult UserReturnValue(User user,List<TeamInfo> teams, int Id)
+        {
+            return Json(new
+            {
+                err_code = 0,
+                data = new UserInfo()
+                {
+                    username = user.Email,
+                    nickname = user.Nickname,
+                    gender = user.Gender,
+                    status = user.Status,
+                    description = user.Description,
+                    birthday = user.Birthday.ToLongDateString(),
+                    avatar = AvatarSaveHelper.GetObject(user.Avatar),
+                    role = "user",
+                    preference = new UserPreference()
+                    {
+                        preferenceColor = user.ColorPreference,
+                        preferenceLayout = user.LayoutPreference,
+                        preferenceShowMode = user.RevealedPreference,
+                        preferenceTeam = Id
+                    },
+
+                    teams = teams
+                }
+            });
         }
         
         public bool CheckUserSession(string username)
@@ -50,7 +99,7 @@ namespace MeshBackend.Controllers
             }
             if (HttpContext.Session.IsAvailable)
             {
-                HttpContext.Session.SetString(username,"");
+                HttpContext.Session.SetString(username,Guid.NewGuid().ToString());
             }
             return false;
         }
@@ -107,7 +156,7 @@ namespace MeshBackend.Controllers
         
         [HttpPost]
         [Route("register")]
-        public JsonResult Register(RegisterRequest request)
+        public JsonResult Register(UserRequest request)
         {
             if (!CornerCaseCheckHelper.Check(request.username,50,CornerCaseCheckHelper.Username))
             {
@@ -145,23 +194,15 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
             }
 
-            return Json(new
-            {
-                err_code = 0,
-                data = new
-                {
-                    isSuccess = true,
-                    username = request.username,
-                    role = "user",
-                },
-            });
+            return UserReturnValue(newUser, new List<TeamInfo>(),-1);
 
         }
+        
 
         
         [HttpPost]
         [Route("login")]
-        public JsonResult Login(LoginRequest request)
+        public JsonResult Login(UserRequest request)
         {
             if (!CornerCaseCheckHelper.Check(request.username,50,CornerCaseCheckHelper.Username))
             {
@@ -181,10 +222,11 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(201, "Incorrect username or password.");
             }
 
-            if (CheckUserSession(user.Email))
+            if (HttpContext.Session.IsAvailable && HttpContext.Session.GetString(request.username) == null)
             {
-                return JsonReturnHelper.ErrorReturn(203, "User has already logged in.");
+                HttpContext.Session.SetString(request.username,Guid.NewGuid().ToString());
             }
+                
                 
             //Find teams of the user
             var cooperation = _meshContext.Cooperations
@@ -206,28 +248,128 @@ namespace MeshBackend.Controllers
             }
 
 
-            return Json(new
-            {
-                err_code = 0,
-                data = new
-                {
-                    isSuccess = true,
-                    username = request.username,
-                    role = "user",
-                    token = "",
-                    avatar = user.Avatar,
-                    preference = new
-                    {
-                      preferenceShowMode = user.RevealedPreference,
-                      preferenceColor = user.ColorPreference,
-                      preferenceLayout = user.LayoutPreference,
-                      preferenceTeam = preferenceTeamId
-                    },
-                    teams = teams
-                },
-            });
+            return UserReturnValue(user, teams,preferenceTeamId);
         }
 
+        [HttpPost]
+        [Route("user/password")]
+        public JsonResult UpdateUserPassword(UserRequest request)
+        {
+            if (!CornerCaseCheckHelper.Check(request.username,50,CornerCaseCheckHelper.Username))
+            {
+                return JsonReturnHelper.ErrorReturn(104, "Invalid username");
+            }
+            
+            if (!CornerCaseCheckHelper.Check(request.oldPassword, 0, CornerCaseCheckHelper.PassWord))
+            {
+                return JsonReturnHelper.ErrorReturn(112, "Invalid oldPassword.");
+            }
+            
+            if (!CornerCaseCheckHelper.Check(request.password, 0, CornerCaseCheckHelper.PassWord))
+            {
+                return JsonReturnHelper.ErrorReturn(111, "Invalid password.");
+            }
 
+            if (request.password == request.oldPassword)
+            {
+                return JsonReturnHelper.ErrorReturn(113, "The old and new passwords are the same.");
+            }
+
+            var user = _meshContext.Users.FirstOrDefault(u => u.Email == request.username);
+            
+            //Check Password
+            if (user == null|| !CheckHashPassword(request.oldPassword, user.PasswordSalt, user.PasswordDigest))
+            {
+                return JsonReturnHelper.ErrorReturn(201, "Incorrect username or password.");
+            }
+            HashPassword hashPassword = GetHashPassword(request.password);
+            try
+            {
+                user.PasswordDigest = hashPassword.PasswordDigest;
+                user.PasswordSalt = hashPassword.PasswordSalt;
+                _meshContext.Users.Update(user);
+                _meshContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
+            }
+            
+            return JsonReturnHelper.SuccessReturn();
+        }
+
+        [HttpPatch]
+        [Route("user")]
+        public JsonResult UpdateUserInformation(UserInfo request)
+        {
+            if (!CornerCaseCheckHelper.Check(request.username,50,CornerCaseCheckHelper.Username))
+            {
+                return JsonReturnHelper.ErrorReturn(104, "Invalid username");
+            }
+
+            if (HttpContext.Session.GetString(request.username) == null)
+            {
+                return JsonReturnHelper.ErrorReturn(2, "User status error.");
+            }
+
+            if (!CornerCaseCheckHelper.Check(request.nickname, 50, CornerCaseCheckHelper.Username))
+            {
+                return JsonReturnHelper.ErrorReturn(120, "Invalid nickname.");
+            }
+
+            if (!CornerCaseCheckHelper.Check(request.birthday, 0, CornerCaseCheckHelper.Time))
+            {
+                return JsonReturnHelper.ErrorReturn(121, "Invalid birthday.");
+            }
+
+            if (!CornerCaseCheckHelper.Check(request.description, 0, CornerCaseCheckHelper.Description))
+            {
+                return JsonReturnHelper.ErrorReturn(122, "Invalid description.");
+            }
+
+            var user = _meshContext.Users.First(u => u.Email == request.username);
+
+            try
+            {
+                user.Nickname = request.nickname;
+                user.Gender = request.gender;
+                user.Status = request.status;
+                user.Address = request.address;
+                user.Description = request.description;
+                user.Birthday = Convert.ToDateTime(request.birthday);
+                user.Avatar = AvatarSaveHelper.PutObject(request.avatar);
+                _meshContext.Users.Update(user);
+                _meshContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
+            }
+            
+            var cooperation = _meshContext.Cooperations
+                .Where(b => b.UserId == user.Id);
+            var teams = _meshContext.Teams
+                .Join(cooperation, t => t.Id, c => c.TeamId, (t, c) =>
+                    new TeamInfo
+                    {
+                        TeamId = t.Id,
+                        TeamName = t.Name,
+                        AdminId = t.AdminId
+                    }).ToList();
+
+            var preferenceTeamId = -1;
+            if (cooperation.FirstOrDefault() != null)
+            {
+                var preferenceTeamCount = cooperation.DefaultIfEmpty().Max(a => a.AccessCount);
+                preferenceTeamId = cooperation.First(c => c.AccessCount == preferenceTeamCount).TeamId;
+            }
+
+
+            return UserReturnValue(user, teams, preferenceTeamId);
+
+        }
+        
     }
 }

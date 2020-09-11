@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MeshBackend.Helpers
@@ -30,4 +31,42 @@ namespace MeshBackend.Helpers
                 });
         }
     }
+
+    public class UserInfo
+    {
+        public string username;
+        public string nickname;
+        public int gender;
+        public int status;
+        public string address;
+        public string description;
+        public string birthday;
+        public string avatar;
+        public string role;
+        public UserPreference preference;
+        public List<TeamInfo> teams;
+    }
+
+    public class UserPreference
+    {
+        public string preferenceShowMode;
+        public string preferenceColor;
+        public string preferenceLayout;
+        public int preferenceTeam;
+    }
+    
+    public class TeamInfo
+    { 
+        public string TeamName { get; set; }
+        public int TeamId { get; set; }
+        public int AdminId { get; set; }
+        
+        public string AdminName { get; set; }
+        
+        public string CreateTIme { get; set; }
+        
+    }
+
+
+    
 }

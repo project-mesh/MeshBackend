@@ -38,38 +38,15 @@ namespace MeshBackend.Controllers
             public string oldPassword { get; set; }
         }
         
-        public class UserInfo
-        {
-            public bool isSuccess = true;
-            public string msg = "";
-            public string username;
-            public string nickname;
-            public int gender;
-            public int status;
-            public string address;
-            public string description;
-            public string birthday;
-            public string avatar;
-            public string role;
-            public UserPreference preference;
-            public List<TeamInfo> teams;
-        }
-
-        public class UserPreference
-        {
-            public string preferenceShowMode;
-            public string preferenceColor;
-            public string preferenceLayout;
-            public int preferenceTeam;
-        }
-
         public JsonResult UserReturnValue(User user,List<TeamInfo> teams, int Id)
         {
             return Json(new
             {
                 err_code = 0,
-                data = new UserInfo()
+                data = new
                 {
+                    isSuccess = true,
+                    msg = "",
                     username = user.Email,
                     nickname = user.Nickname,
                     gender = user.Gender,
@@ -140,13 +117,7 @@ namespace MeshBackend.Controllers
             return hashed == passwordDigest;
         }
         
-        public class TeamInfo
-        { 
-            public string TeamName { get; set; }
-            public int TeamId { get; set; }
-            public int AdminId { get; set; }
-        }
-        
+
 
         public class HashPassword
         {
@@ -237,7 +208,9 @@ namespace MeshBackend.Controllers
                     {
                         TeamId = t.Id,
                         TeamName = t.Name,
-                        AdminId = t.AdminId
+                        AdminId = t.AdminId,
+                        CreateTIme = t.CreatedTime.ToString(),
+                        AdminName = _meshContext.Users.First(u=>u.Id==t.AdminId).Nickname
                     }).ToList();
 
             var preferenceTeamId = -1;

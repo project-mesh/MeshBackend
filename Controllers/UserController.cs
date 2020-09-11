@@ -151,7 +151,8 @@ namespace MeshBackend.Controllers
                 Email = request.username,
                 Nickname = request.username,
                 PasswordDigest = hashPassword.PasswordDigest,
-                PasswordSalt = hashPassword.PasswordSalt
+                PasswordSalt = hashPassword.PasswordSalt,
+                Avatar = AvatarSaveHelper.PutObject("")
             };
             //try to save the user
             try
@@ -311,7 +312,7 @@ namespace MeshBackend.Controllers
                 user.Address = request.address;
                 user.Description = request.description;
                 user.Birthday = Convert.ToDateTime(request.birthday);
-                user.Avatar = AvatarSaveHelper.PutObject(request.avatar);
+                user.Avatar = AvatarSaveHelper.PutObject(request.avatar,user.Avatar);
                 _meshContext.Users.Update(user);
                 _meshContext.SaveChanges();
             }

@@ -14,9 +14,9 @@ namespace MeshBackend.Helpers
         private const string bucketName = "";
         private const int maxLength =int.MaxValue;
 
-        public static string PutObject(string objectContent)
+        public static string PutObject(string objectContent,string name=null)
         {
-            var objectName = Guid.NewGuid().ToString();
+            var objectName = name ?? Guid.NewGuid().ToString();
             var client = new OssClient(endpoint, accessKeyId, accessKeysecret);
             try
             {

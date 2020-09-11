@@ -41,6 +41,7 @@ namespace MeshBackend.Controllers
             public int ProjectId { get; set; }
             public string ProjectName { get; set; }
             public string AdminName { get; set; }
+            public string ProjectLogo { get; set; }
         }
         
         public JsonResult CheckUsername(string username)
@@ -123,7 +124,8 @@ namespace MeshBackend.Controllers
                     {
                         ProjectId = p.Id,
                         ProjectName = p.Name,
-                        AdminName = u.Nickname
+                        AdminName = u.Nickname,
+                        ProjectLogo = AvatarSaveHelper.GetObject(p.Icon)
                     }).ToList();
 
             var userTeamCooperation = teamCooperation.First(c => c.UserId == user.Id);

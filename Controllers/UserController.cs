@@ -173,7 +173,10 @@ namespace MeshBackend.Controllers
                 Nickname = request.username,
                 PasswordDigest = hashPassword.PasswordDigest,
                 PasswordSalt = hashPassword.PasswordSalt,
-                Avatar = AvatarSaveHelper.PutObject("")
+                Avatar = AvatarSaveHelper.PutObject(""),
+                ColorPreference = "blue",
+                LayoutPreference = "Default",
+                RevealedPreference = "card"
             };
             //try to save the user
             try

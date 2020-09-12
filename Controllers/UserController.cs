@@ -169,9 +169,7 @@ namespace MeshBackend.Controllers
             return UserReturnValue(newUser, new List<TeamInfo>(),-1);
 
         }
-        
 
-        
         [HttpPost]
         [Route("login")]
         public JsonResult Login(UserRequest request)
@@ -344,6 +342,60 @@ namespace MeshBackend.Controllers
             return UserReturnValue(user, teams, preferenceTeamId);
 
         }
+
+        [HttpGet]
+        [Route("user")]
+        public JsonResult QueryUser(string username, string keyword)
+        {
+            if (!CornerCaseCheckHelper.Check(username, 50, CornerCaseCheckHelper.Username))
+            {
+                return JsonReturnHelper.ErrorReturn(104, "Invalid username.");
+            }
+
+            if (!CornerCaseCheckHelper.Check(keyword, 50, CornerCaseCheckHelper.Username))
+            {
+                return JsonReturnHelper.ErrorReturn(457, "Invalid keyword.");
+            }
+
+            if (HttpContext.Session.IsAvailable && HttpContext.Session.GetString(username) == null)
+            {
+                return JsonReturnHelper.ErrorReturn(2, "User status error.");
+            }
+
+            var userAccordingToUsername = _meshContext.Users
+                .Where(u => u.Email.Contains(keyword));
+            var userAccordingToNickname = _meshContext.Users
+                .Where(u => u.Nickname.Contains(keyword));
+            var userAccordingToDescription = _meshContext.Users
+                .Where(u => u.Description.Contains(keyword));
+
+            var users = userAccordingToUsername
+                .Union(userAccordingToNickname)
+                .Union(userAccordingToDescription)
+                .Select(u => new
+                {
+                    username = u.Email,
+                    avatar = AvatarSaveHelper.GetObject(u.Avatar),
+                    nickname = u.Nickname,
+                    gender = u.Gender,
+                    status = u.Status,
+                    address = u.Address,
+                    description = u.Description,
+                    birthday = u.Birthday
+                })
+                .ToList();
+
+
+            return Json(new
+            {
+                err_code = 0,
+                data = new
+                {
+                    users = users
+                }
+            });
+        }
+        
         
     }
 }

@@ -38,6 +38,7 @@ namespace MeshBackend
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(15);
                 options.Cookie.IsEssential = true;
+                options.Cookie.HttpOnly = false;
             });
             services.AddCors(options =>
             {

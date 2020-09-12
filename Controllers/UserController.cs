@@ -38,8 +38,29 @@ namespace MeshBackend.Controllers
             public string oldPassword { get; set; }
         }
         
-        public JsonResult UserReturnValue(User user,List<TeamInfo> teams, int Id)
+        public JsonResult UserReturnValue(User user)
         {
+            //Find teams of the user
+            var cooperation = _meshContext.Cooperations
+                .Where(b => b.UserId == user.Id);
+            var teams = _meshContext.Teams
+                .Join(cooperation, t => t.Id, c => c.TeamId, (t, c) =>
+                    new TeamInfo
+                    {
+                        TeamId = t.Id,
+                        TeamName = t.Name,
+                        AdminId = t.AdminId,
+                        CreateTIme = t.CreatedTime.ToString(),
+                        AdminName = _meshContext.Users.First(u=>u.Id==t.AdminId).Nickname
+                    }).ToList();
+
+            var preferenceTeamId = -1;
+            if (cooperation.FirstOrDefault() != null)
+            {
+                var preferenceTeamCount = cooperation.DefaultIfEmpty().Max(a => a.AccessCount);
+                preferenceTeamId = cooperation.First(c => c.AccessCount == preferenceTeamCount).TeamId;
+            }
+
             return Json(new
             {
                 err_code = 0,
@@ -60,7 +81,7 @@ namespace MeshBackend.Controllers
                         preferenceColor = user.ColorPreference,
                         preferenceLayout = user.LayoutPreference,
                         preferenceShowMode = user.RevealedPreference,
-                        preferenceTeam = Id
+                        preferenceTeam = preferenceTeamId
                     },
 
                     teams = teams
@@ -166,7 +187,7 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
             }
 
-            return UserReturnValue(newUser, new List<TeamInfo>(),-1);
+            return UserReturnValue(newUser);
 
         }
 
@@ -196,31 +217,8 @@ namespace MeshBackend.Controllers
             {
                 HttpContext.Session.SetString(request.username,Guid.NewGuid().ToString());
             }
-                
-                
-            //Find teams of the user
-            var cooperation = _meshContext.Cooperations
-                .Where(b => b.UserId == user.Id);
-            var teams = _meshContext.Teams
-                .Join(cooperation, t => t.Id, c => c.TeamId, (t, c) =>
-                    new TeamInfo
-                    {
-                        TeamId = t.Id,
-                        TeamName = t.Name,
-                        AdminId = t.AdminId,
-                        CreateTIme = t.CreatedTime.ToString(),
-                        AdminName = _meshContext.Users.First(u=>u.Id==t.AdminId).Nickname
-                    }).ToList();
-
-            var preferenceTeamId = -1;
-            if (cooperation.FirstOrDefault() != null)
-            {
-                var preferenceTeamCount = cooperation.DefaultIfEmpty().Max(a => a.AccessCount);
-                preferenceTeamId = cooperation.First(c => c.AccessCount == preferenceTeamCount).TeamId;
-            }
-
-
-            return UserReturnValue(user, teams,preferenceTeamId);
+            
+            return UserReturnValue(user);
         }
 
         [HttpPost]
@@ -320,26 +318,7 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
             }
             
-            var cooperation = _meshContext.Cooperations
-                .Where(b => b.UserId == user.Id);
-            var teams = _meshContext.Teams
-                .Join(cooperation, t => t.Id, c => c.TeamId, (t, c) =>
-                    new TeamInfo
-                    {
-                        TeamId = t.Id,
-                        TeamName = t.Name,
-                        AdminId = t.AdminId
-                    }).ToList();
-
-            var preferenceTeamId = -1;
-            if (cooperation.FirstOrDefault() != null)
-            {
-                var preferenceTeamCount = cooperation.DefaultIfEmpty().Max(a => a.AccessCount);
-                preferenceTeamId = cooperation.First(c => c.AccessCount == preferenceTeamCount).TeamId;
-            }
-
-
-            return UserReturnValue(user, teams, preferenceTeamId);
+            return UserReturnValue(user);
 
         }
 

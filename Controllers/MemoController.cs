@@ -52,7 +52,7 @@ namespace MeshBackend.Controllers
                 {
                     isSuccess = true,
                     msg = "",
-                    knowledge = memo
+                    knowledgeBase = memo
                 }
             });
         }
@@ -66,7 +66,7 @@ namespace MeshBackend.Controllers
                 {
                     isSuccess = true,
                     msg = "",
-                    knowledge = memoList
+                    knowledgeBase = memoList
                 }
             });
         }
@@ -387,13 +387,13 @@ namespace MeshBackend.Controllers
             }
 
             
-            var team = _meshContext.Projects.FirstOrDefault(p => p.Id == teamId);
+            var team = _meshContext.Teams.FirstOrDefault(p => p.Id == teamId);
             if (team == null)
             {
                 return JsonReturnHelper.ErrorReturn(302, "Team does not exist.");
             }
             
-            if (_permissionCheck.CheckProjectPermission(username, team) == PermissionCheckHelper.TeamOutsider)
+            if (_permissionCheck.CheckTeamPermission(username, team) == PermissionCheckHelper.TeamOutsider)
             {
                 return JsonReturnHelper.ErrorReturn(801, "Permission denied.");
             }

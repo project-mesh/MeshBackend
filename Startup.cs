@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using MeshBackend.Helpers;
 using Microsoft.AspNetCore.Builder;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.EntityFrameworkCore.Extensions;
 using MeshBackend.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace MeshBackend
 {
@@ -39,13 +41,14 @@ namespace MeshBackend
                 options.IdleTimeout = TimeSpan.FromMinutes(15);
                 options.Cookie.IsEssential = true;
                 options.Cookie.HttpOnly = false;
+                options.Cookie.SameSite = SameSiteMode.Unspecified;
             });
             services.AddCors(options =>
             {
                 options.AddPolicy(name: MeshAllowSpecificOrigins,
                     builder =>
                     {
-                        builder.WithOrigins("localhost")
+                        builder.AllowAnyOrigin()
                             .AllowAnyHeader()
                             .AllowAnyMethod();
                     });

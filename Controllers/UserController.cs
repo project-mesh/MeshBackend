@@ -76,7 +76,7 @@ namespace MeshBackend.Controllers
                     birthday = user.Birthday.ToLongDateString(),
                     avatar = AvatarSaveHelper.GetObject(user.Avatar),
                     role = "user",
-                    preference = new UserPreference()
+                    preference = new 
                     {
                         preferenceColor = user.ColorPreference,
                         preferenceLayout = user.LayoutPreference,
@@ -175,7 +175,7 @@ namespace MeshBackend.Controllers
                 PasswordSalt = hashPassword.PasswordSalt,
                 Avatar = AvatarSaveHelper.PutObject(""),
                 ColorPreference = "blue",
-                LayoutPreference = "Default",
+                LayoutPreference = "default",
                 RevealedPreference = "card"
             };
             //try to save the user
@@ -224,7 +224,7 @@ namespace MeshBackend.Controllers
             return UserReturnValue(user);
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("user/password")]
         public JsonResult UpdateUserPassword(UserRequest request)
         {
@@ -272,7 +272,7 @@ namespace MeshBackend.Controllers
             return JsonReturnHelper.SuccessReturn();
         }
 
-        [HttpPatch]
+        [HttpPut]
         [Route("user")]
         public JsonResult UpdateUserInformation(UserInfo request)
         {

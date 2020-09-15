@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 namespace MeshBackend.Controllers
 {
     [ApiController]
-    [Route("api/mesh/project")]
+    [Route("api/mesh")]
     [Produces("application/json")]
     public class ProjectController:Controller
     {
@@ -92,6 +92,7 @@ namespace MeshBackend.Controllers
         }
         
         [HttpPost]
+        [Route("project")]
         public JsonResult CreateProject(ProjectRequest request)
         {
             var checkResult = CheckUsername(request.Username);
@@ -199,6 +200,7 @@ namespace MeshBackend.Controllers
         }
 
         [HttpDelete]
+        [Route("project")]
         public JsonResult DeleteProject(string username, int teamId, int projectId)
         {
             var checkResult = CheckUsername(username);
@@ -262,7 +264,7 @@ namespace MeshBackend.Controllers
         }
 
         [HttpPost]
-        [Route("invite")]
+        [Route("project/invite")]
         public JsonResult InviteNewProjectMember(ProjectRequest request)
         {
             var checkResult = CheckUsername(request.Username);
@@ -347,6 +349,7 @@ namespace MeshBackend.Controllers
         }
 
         [HttpGet]
+        [Route("project")]
         public JsonResult QueryProject(string username, int projectId)
         {
             var checkResult = CheckUsername(username);
@@ -374,6 +377,7 @@ namespace MeshBackend.Controllers
         }
 
         [HttpPatch]
+        [Route("project")]
         public JsonResult UpdateProject(ProjectRequest request)
         {
             var checkResult = CheckUsername(request.Username);

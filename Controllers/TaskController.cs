@@ -65,10 +65,10 @@ namespace MeshBackend.Controllers
             public string Description { get; set; }
             public Status Status { get; set; }
             public bool isFinished { get; set; }
-            public List<SubTaskInfo> SubTasks;
+            public List<SubTaskInfo> SubTasks { get; set; }
         }
 
-        public Status GetStatus(DateTime time,bool isFinished)
+        private static Status GetStatus(DateTime time,bool isFinished)
         {
             if (isFinished)
             {
@@ -424,6 +424,7 @@ namespace MeshBackend.Controllers
 
             var founder = _meshContext.Users.First(u => u.Id == project.AdminId);
 
+            
             return TaskResult(new TaskInfo()
             {    
                 Id = task.Id,
@@ -762,7 +763,6 @@ namespace MeshBackend.Controllers
                     isFinished = s.Finished,
                     Name = s.Name,
                     Principal = _meshContext.Users.First(u=>u.Id==s.LeaderId).Nickname,
-                    Status = GetStatus(s.EndTime,s.Finished),
                     SubTasks = _meshContext.Subtasks
                         .Where(b => b.TaskId == s.Id)
                         .Select(e => new SubTaskInfo()
@@ -771,7 +771,6 @@ namespace MeshBackend.Controllers
                             TaskId = e.TaskId,
                             CreatedTime = e.CreatedTime,
                             Description = e.Description,
-                            Status = GetStatus(s.EndTime,e.Finished),
                             isFinished = e.Finished,
                             Founder = founder.Nickname,
                             Principal = _meshContext.Assigns
@@ -782,6 +781,16 @@ namespace MeshBackend.Controllers
                         .ToList()
                 })
                 .ToList();
+
+            foreach (var task in tasks)
+            {
+                task.Status = GetStatus(task.EndTime, task.isFinished);
+                foreach (var subTask in task.SubTasks)
+                {
+                    subTask.Status = GetStatus(task.EndTime, subTask.isFinished);
+                }
+            }
+            
             return TaskListResult(tasks);
         }
 
@@ -848,6 +857,7 @@ namespace MeshBackend.Controllers
 
             foreach (var task in tasks)
             {
+                task.Status = GetStatus(task.EndTime, task.isFinished);
                 task.SubTasks = _meshContext.Subtasks
                     .Where(b => b.TaskId == task.Id)
                     .Select(s => new SubTaskInfo()
@@ -856,14 +866,17 @@ namespace MeshBackend.Controllers
                         TaskId = s.TaskId,
                         CreatedTime = s.CreatedTime,
                         Description = s.Description,
-                        Founder = task.Founder,
-                        Status = GetStatus(task.EndTime,s.Finished),
+                        Founder = task.Founder, 
                         Principal = _meshContext.Assigns
                             .Where(a => a.TaskId == s.TaskId && a.Title == s.Title)
                             .Join(_meshContext.Users, n => n.UserId, u => u.Id, (n, u) => u.Nickname)
                             .ToList()
                     })
                     .ToList();
+                foreach (var subTask in task.SubTasks)
+                {
+                    subTask.Status = GetStatus(task.EndTime, subTask.isFinished);
+                }
             }
             
             return TaskListResult(tasks);

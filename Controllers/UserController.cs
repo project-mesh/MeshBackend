@@ -37,7 +37,8 @@ namespace MeshBackend.Controllers
             public string token { get; set; }
             public string oldPassword { get; set; }
         }
-        
+
+
         public JsonResult UserReturnValue(User user)
         {
             //Find teams of the user
@@ -76,7 +77,7 @@ namespace MeshBackend.Controllers
                     birthday = user.Birthday.ToLongDateString(),
                     avatar = AvatarSaveHelper.GetObject(user.Avatar),
                     role = "user",
-                    preference = new 
+                    preference = new UserPreference()
                     {
                         preferenceColor = user.ColorPreference,
                         preferenceLayout = user.LayoutPreference,
@@ -272,10 +273,10 @@ namespace MeshBackend.Controllers
             return JsonReturnHelper.SuccessReturn();
         }
 
-        [HttpPut]
+        [HttpPatch]
         [Route("user")]
         public JsonResult UpdateUserInformation(UserInfo request)
-        {
+        { 
             if (!CornerCaseCheckHelper.Check(request.username,50,CornerCaseCheckHelper.Username))
             {
                 return JsonReturnHelper.ErrorReturn(104, "Invalid username");

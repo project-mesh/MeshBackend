@@ -34,27 +34,27 @@ namespace MeshBackend.Helpers
 
     public class UserInfo
     {
-        public string username;
-        public string nickname;
-        public int gender;
-        public int status;
-        public string address;
-        public string description;
-        public string birthday;
-        public string avatar;
-        public string role;
-        public UserPreference preference;
-        public List<TeamInfo> teams;
+        public string username { get; set; }
+        public string nickname { get; set; }
+        public int gender { get; set; }
+        public int status { get; set; }
+        public string address { get; set; }
+        public string description { get; set; }
+        public string birthday { get; set; }
+        public string avatar { get; set; }
+        public string role { get; set; }
+        public UserPreference preference { get; set; }
+        public List<TeamInfo> teams { get; set; }
     }
 
     public class UserPreference
     {
-        public string preferenceShowMode;
-        public string preferenceColor;
-        public string preferenceLayout;
-        public int preferenceTeam;
+        public string preferenceShowMode { get; set; }
+        public string preferenceColor { get; set; }
+        public string preferenceLayout { get; set; }
+        public int preferenceTeam { get; set; }
     }
-    
+
     public class TeamInfo
     { 
         public string TeamName { get; set; }
@@ -66,7 +66,5 @@ namespace MeshBackend.Helpers
         public string CreateTIme { get; set; }
         
     }
-
-
     
 }

@@ -296,7 +296,7 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(121, "Invalid birthday.");
             }
 
-            if (!CornerCaseCheckHelper.Check(request.description, 0, CornerCaseCheckHelper.Description))
+            if (!CornerCaseCheckHelper.Check(request.description, 100, CornerCaseCheckHelper.Description))
             {
                 return JsonReturnHelper.ErrorReturn(122, "Invalid description.");
             }

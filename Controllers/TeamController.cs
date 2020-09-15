@@ -32,6 +32,8 @@ namespace MeshBackend.Controllers
         {
             public int Id { get; set; }
             public string Username { get; set; }
+            public string Nickname { get; set; }
+            public string Avatar { get; set; }
         }
 
         public class TeamProject
@@ -39,6 +41,7 @@ namespace MeshBackend.Controllers
             public int ProjectId { get; set; }
             public string ProjectName { get; set; }
             public string AdminName { get; set; }
+            public string ProjectLogo { get; set; }
         }
         
         public JsonResult CheckUsername(string username)
@@ -73,27 +76,27 @@ namespace MeshBackend.Controllers
         }
         
         [HttpGet]
-        public JsonResult QueryTeam(QueryRequest request)
+        public JsonResult QueryTeam(string username, int teamId)
         {
-            var checkResult = CheckUsername(request.username);
+            var checkResult = CheckUsername(username);
             if (checkResult != null)
             {
                 return checkResult;
             }
 
-            if (!CornerCaseCheckHelper.Check(request.teamId, 0, CornerCaseCheckHelper.Id))
+            if (!CornerCaseCheckHelper.Check(teamId, 0, CornerCaseCheckHelper.Id))
             {
                 return JsonReturnHelper.ErrorReturn(301, "Invalid teamId");
             }
 
-            var user = _meshContext.Users.First(u => u.Email == request.username);
-            var team = _meshContext.Teams.FirstOrDefault(t => t.Id == request.teamId);
+            var user = _meshContext.Users.First(u => u.Email ==username);
+            var team = _meshContext.Teams.FirstOrDefault(t => t.Id == teamId);
             if (team == null)
             {
                 return JsonReturnHelper.ErrorReturn(302, "Team does not exist.");
             }
 
-            if (_permissionCheck.CheckTeamPermission(request.username, team) == PermissionCheckHelper.TeamOutsider)
+            if (_permissionCheck.CheckTeamPermission(username, team) == PermissionCheckHelper.TeamOutsider)
             {
                 return JsonReturnHelper.ErrorReturn(305, "Permission denied.");
             }
@@ -107,19 +110,22 @@ namespace MeshBackend.Controllers
                     new Member()
                     {
                         Id = u.Id,
-                        Username = u.Nickname
+                        Username = u.Email,
+                        Nickname = u.Nickname,
+                        Avatar = AvatarSaveHelper.GetObject(u.Avatar)
                     }).ToList();
 
             //Find projects of the team
             var project = _meshContext.Projects
-                .Where(p => p.TeamId == request.teamId);
+                .Where(p => p.TeamId ==teamId);
             var teamProjects = _meshContext.Users
                 .Join(project, u => u.Id, p => p.AdminId, (u, p) =>
                     new TeamProject()
                     {
                         ProjectId = p.Id,
                         ProjectName = p.Name,
-                        AdminName = u.Nickname
+                        AdminName = u.Nickname,
+                        ProjectLogo = AvatarSaveHelper.GetObject(p.Icon)
                     }).ToList();
 
             var userTeamCooperation = teamCooperation.First(c => c.UserId == user.Id);

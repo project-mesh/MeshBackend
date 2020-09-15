@@ -3,14 +3,16 @@ using System;
 using MeshBackend.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace MeshBackend.Migrations
 {
     [DbContext(typeof(MeshContext))]
-    partial class MeshContextModelSnapshot : ModelSnapshot
+    [Migration("20200908020154_AddMoreAdminProperties")]
+    partial class AddMoreAdminProperties
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,9 +28,6 @@ namespace MeshBackend.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("varchar(100)")
                         .HasMaxLength(100);
-
-                    b.Property<DateTime>("Birthday")
-                        .HasColumnType("datetime");
 
                     b.Property<DateTime>("CreatedTime")
                         .ValueGeneratedOnAdd()
@@ -604,9 +603,6 @@ namespace MeshBackend.Migrations
                     b.Property<string>("Avatar")
                         .HasColumnType("varchar(2048)")
                         .HasMaxLength(2048);
-
-                    b.Property<DateTime>("Birthday")
-                        .HasColumnType("datetime");
 
                     b.Property<string>("ColorPreference")
                         .HasColumnType("varchar(50)")

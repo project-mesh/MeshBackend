@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using MeshBackend.Helpers;
 using Microsoft.AspNetCore.Builder;
@@ -14,11 +15,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.EntityFrameworkCore.Extensions;
 using MeshBackend.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace MeshBackend
 {
     public class Startup
     {
+        readonly string MeshAllowSpecificOrigins = "mesh";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -35,8 +39,19 @@ namespace MeshBackend
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(15);
-                options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
+                options.Cookie.HttpOnly = false;
+                options.Cookie.SameSite = SameSiteMode.Unspecified;
+            });
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: MeshAllowSpecificOrigins,
+                    builder =>
+                    {
+                        builder.AllowAnyOrigin()
+                            .AllowAnyHeader()
+                            .AllowAnyMethod();
+                    });
             });
             services.AddControllers();
         }
@@ -52,6 +67,8 @@ namespace MeshBackend
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors(MeshAllowSpecificOrigins);
 
             app.UseAuthorization();
             

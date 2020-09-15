@@ -49,6 +49,20 @@ namespace MeshBackend.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime UpdatedTime { get; set; }
         
+        [DefaultValue(0)]
+        public int Gender { get; set; }
+
+        [DefaultValue(0)]
+        public int Status { get; set; }
+        
+        [MaxLength(100)]
+        public string Description { get; set; }
+
+        [MaxLength(100)]
+        public string Address { get; set; }
+        
+        public DateTime Birthday { get; set; }
+        
         public List<Cooperation>Cooperations { get; set; }
         
         public List<Task>Tasks { get; set; }

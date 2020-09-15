@@ -3,14 +3,16 @@ using System;
 using MeshBackend.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace MeshBackend.Migrations
 {
     [DbContext(typeof(MeshContext))]
-    partial class MeshContextModelSnapshot : ModelSnapshot
+    [Migration("20200908015219_AddMoreUserProperties")]
+    partial class AddMoreUserProperties
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -23,28 +25,14 @@ namespace MeshBackend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("Address")
-                        .HasColumnType("varchar(100)")
-                        .HasMaxLength(100);
-
-                    b.Property<DateTime>("Birthday")
-                        .HasColumnType("datetime");
-
                     b.Property<DateTime>("CreatedTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("varchar(100)")
-                        .HasMaxLength(100);
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("varchar(50)")
                         .HasMaxLength(50);
-
-                    b.Property<int>("Gender")
-                        .HasColumnType("int");
 
                     b.Property<string>("Nickname")
                         .IsRequired()
@@ -62,9 +50,6 @@ namespace MeshBackend.Migrations
                     b.Property<string>("RememberDigest")
                         .HasColumnType("varchar(70)")
                         .HasMaxLength(70);
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedTime")
                         .ValueGeneratedOnAddOrUpdate()
@@ -597,16 +582,9 @@ namespace MeshBackend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("Address")
-                        .HasColumnType("varchar(100)")
-                        .HasMaxLength(100);
-
                     b.Property<string>("Avatar")
                         .HasColumnType("varchar(2048)")
                         .HasMaxLength(2048);
-
-                    b.Property<DateTime>("Birthday")
-                        .HasColumnType("datetime");
 
                     b.Property<string>("ColorPreference")
                         .HasColumnType("varchar(50)")

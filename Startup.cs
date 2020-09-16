@@ -73,7 +73,7 @@ namespace MeshBackend
 
             app.UseAuthorization();
             
-            app.SeedData();
+            app.SeedData(Configuration);
             
             app.UseSession();
             

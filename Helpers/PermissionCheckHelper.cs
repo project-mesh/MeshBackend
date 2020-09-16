@@ -24,7 +24,7 @@ namespace MeshBackend.Helpers
 
         public int CheckProjectPermission(string username, Project project)
         {
-            var user = _meshContext.Users.First(u => u.Nickname == username);
+            var user = _meshContext.Users.First(u => u.Email == username);
             var develop = _meshContext.Develops.FirstOrDefault(d => d.ProjectId == project.Id && d.UserId == user.Id);
             if (develop == null)
             {
@@ -36,7 +36,7 @@ namespace MeshBackend.Helpers
         
         public int CheckTeamPermission(string username, Team team)
         {
-            var user = _meshContext.Users.First(u => u.Nickname == username);
+            var user = _meshContext.Users.First(u => u.Email == username);
             var cooperation = _meshContext.Cooperations.FirstOrDefault(c => c.TeamId == team.Id && c.UserId == user.Id);
             if (cooperation == null)
             {

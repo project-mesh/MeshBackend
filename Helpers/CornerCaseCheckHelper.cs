@@ -16,10 +16,11 @@ namespace MeshBackend.Helpers
 
         public static bool Check(object target, int limit,int attr)
         {
-            if (target == null)
+            if (target == null && attr != Description)
             {
                 return false;
             }
+
             switch (attr)
             {
                 case Username:

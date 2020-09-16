@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Text.Json;
 using Castle.Core.Internal;
 using MeshBackend.Helpers;
 using Google.Protobuf.WellKnownTypes;
@@ -9,6 +10,7 @@ using MeshBackend.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Xunit.Sdk;
 
 namespace MeshBackend.Controllers
 {
@@ -53,17 +55,13 @@ namespace MeshBackend.Controllers
   
             return HttpContext.Session.GetString(username) == null ? JsonReturnHelper.ErrorReturn(2, "User status error.") : null;
         }
-
         
-        public class QueryRequest
+        
+        public class TeamRequest
         {
             public string username { get; set; }
+            
             public int teamId { get; set; }
-        }
-        
-        public class CreateRequest
-        {
-            public string username { get; set; }
             public string teamName { get; set; }
         }
 
@@ -86,7 +84,7 @@ namespace MeshBackend.Controllers
 
             if (!CornerCaseCheckHelper.Check(teamId, 0, CornerCaseCheckHelper.Id))
             {
-                return JsonReturnHelper.ErrorReturn(301, "Invalid teamId");
+                return JsonReturnHelper.ErrorReturn(301, "Invalid teamId.");
             }
 
             var user = _meshContext.Users.First(u => u.Email ==username);
@@ -165,7 +163,7 @@ namespace MeshBackend.Controllers
 
 
         [HttpPost]
-        public JsonResult CreateTeam(CreateRequest request)
+        public JsonResult CreateTeam(TeamRequest request)
         {
             var checkResult = CheckUsername(request.username);
             if (checkResult != null)
@@ -293,6 +291,264 @@ namespace MeshBackend.Controllers
             }
 
             return JsonReturnHelper.SuccessReturn();
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteTeam(string username, int teamId)
+        {
+            
+            var checkResult = CheckUsername(username);
+            if (checkResult != null)
+            {
+                return checkResult;
+            }
+
+            if (!CornerCaseCheckHelper.Check(teamId, 0, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(301, "Invalid teamId.");
+            }
+
+            var team = _meshContext.Teams.FirstOrDefault(t => t.Id == teamId);
+            if (team == null)
+            {
+                return JsonReturnHelper.ErrorReturn(302, "Team not exist.");
+            }
+
+            if (_permissionCheck.CheckTeamPermission(username, team) != PermissionCheckHelper.TeamAdmin)
+            {
+                return JsonReturnHelper.ErrorReturn(305, "Permission denied.");
+            }
+
+            try
+            {
+                _meshContext.Teams.Remove(team);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return JsonReturnHelper.ErrorReturn(2, "Unexpected error.");
+            }
+
+            return JsonReturnHelper.SuccessReturn();
+
+        }
+
+        [HttpDelete]
+        [Route("quit")]
+        public JsonResult QuitTeam(string username, int teamId)
+        {
+            var checkResult = CheckUsername(username);
+            if (checkResult != null)
+            {
+                return checkResult;
+            }
+
+            var user = _meshContext.Users.First(u => u.Email == username);
+            
+            if (!CornerCaseCheckHelper.Check(teamId, 0, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(301, "Invalid teamId.");
+            }
+
+            var team = _meshContext.Teams.FirstOrDefault(t => t.Id == teamId);
+            if (team == null)
+            {
+                return JsonReturnHelper.ErrorReturn(302, "Team not exist.");
+            }
+
+            if (_permissionCheck.CheckTeamPermission(username, team) != PermissionCheckHelper.TeamMember)
+            {
+                return JsonReturnHelper.ErrorReturn(305, "Permission denied.");
+            }
+
+            var cooperation = _meshContext.Cooperations.First(c => c.UserId == user.Id && c.TeamId == teamId);
+            var tasks = _meshContext.Tasks
+                .Where(t => t.LeaderId == user.Id);
+            var subTasks = _meshContext.Assigns
+                .Where(s => s.UserId == user.Id);
+
+            try
+            {
+                _meshContext.Cooperations.Remove(cooperation);
+                foreach (var task in tasks)
+                {
+                    task.LeaderId = team.AdminId;
+                }
+                _meshContext.Tasks.UpdateRange(tasks);
+                foreach (var subTask in subTasks)
+                {
+                    subTask.UserId = team.AdminId;
+                }
+                _meshContext.Assigns.UpdateRange(subTasks);
+                _meshContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+               _logger.LogError(e.ToString());
+               return JsonReturnHelper.ErrorReturn(2, "Unexpected Error.");
+            }
+            
+            return JsonReturnHelper.SuccessReturn();
+
+        }
+
+        [HttpDelete]
+        [Route("remove")]
+        public JsonResult RemoveTeamMember(string username, int teamId, string removeName)
+        {
+            var checkResult = CheckUsername(username);
+            if (checkResult != null)
+            {
+                return checkResult;
+            }
+
+            var user = _meshContext.Users.First(u => u.Email == username);
+            
+            if (!CornerCaseCheckHelper.Check(teamId, 0, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(301, "Invalid teamId.");
+            }
+
+            var team = _meshContext.Teams.FirstOrDefault(t => t.Id == teamId);
+            if (team == null)
+            {
+                return JsonReturnHelper.ErrorReturn(302, "Team not exist.");
+            }
+
+            if (_permissionCheck.CheckTeamPermission(username, team) != PermissionCheckHelper.TeamAdmin)
+            {
+                return JsonReturnHelper.ErrorReturn(305, "Permission denied.");
+            }
+
+            if (!CornerCaseCheckHelper.Check(removeName, 50, CornerCaseCheckHelper.Username))
+            {
+                return JsonReturnHelper.ErrorReturn(104, "Invalid removeName");
+            }
+
+            var removeUser = _meshContext.Users.FirstOrDefault(u => u.Email == removeName);
+            if (removeUser == null)
+            {
+                return JsonReturnHelper.ErrorReturn(104, "RemoveName does not exist.");
+            }
+
+            if (_permissionCheck.CheckTeamPermission(removeName, team) != PermissionCheckHelper.TeamMember)
+            {
+                return JsonReturnHelper.ErrorReturn(305, "RemoveUser can not be removed.");
+            }
+            
+            
+            var cooperation = _meshContext.Cooperations.First(c => c.UserId == removeUser.Id && c.TeamId == teamId);
+            var tasks = _meshContext.Tasks
+                .Where(t => t.LeaderId == removeUser.Id);
+            var subTasks = _meshContext.Assigns
+                .Where(s => s.UserId == removeUser.Id);
+
+            try
+            {
+                _meshContext.Cooperations.Remove(cooperation);
+                foreach (var task in tasks)
+                {
+                    task.LeaderId = team.AdminId;
+                }
+                _meshContext.Tasks.UpdateRange(tasks);
+                foreach (var subTask in subTasks)
+                {
+                    subTask.UserId = team.AdminId;
+                }
+                _meshContext.Assigns.UpdateRange(subTasks);
+                _meshContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return JsonReturnHelper.ErrorReturn(2, "Unexpected Error.");
+            }
+            
+            return JsonReturnHelper.SuccessReturn();
+        }
+
+        [HttpPatch]
+        public JsonResult UpdateTeam(TeamRequest request)
+        {
+            var checkResult = CheckUsername(request.username);
+            if (checkResult != null)
+            {
+                return checkResult;
+            }
+
+            if (!CornerCaseCheckHelper.Check(request.teamId, 0, CornerCaseCheckHelper.Id))
+            {
+                return JsonReturnHelper.ErrorReturn(311, "Invalid teamId.");
+            }
+            
+            if (!CornerCaseCheckHelper.Check(request.teamName, 50, CornerCaseCheckHelper.Title))
+            {
+                return JsonReturnHelper.ErrorReturn(310, "Invalid teamName.");
+            }
+
+            var team = _meshContext.Teams.FirstOrDefault(t => t.Id == request.teamId);
+            if (team == null)
+            {
+                return JsonReturnHelper.ErrorReturn(302, "Team does not exist.");
+            }
+    
+            try
+            {
+                team.Name = request.teamName;
+                _meshContext.Teams.Update(team);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return JsonReturnHelper.ErrorReturn(2, "Unexpected error.");
+            }
+
+            //Find team members
+            var teamCooperation = _meshContext.Cooperations
+                .Where(c => c.TeamId == team.Id);
+            var adminName = _meshContext.Users.First(u => u.Id == team.AdminId).Nickname;
+            var members = _meshContext.Users
+                .Join(teamCooperation, u => u.Id, c => c.UserId, (u, c) =>
+                    new Member()
+                    {
+                        Id = u.Id,
+                        Username = u.Email,
+                        Nickname = u.Nickname,
+                        Avatar = AvatarSaveHelper.GetObject(u.Avatar)
+                    }).ToList();
+
+            //Find projects of the team
+            var project = _meshContext.Projects
+                .Where(p => p.TeamId == team.Id);
+            var teamProjects = _meshContext.Users
+                .Join(project, u => u.Id, p => p.AdminId, (u, p) =>
+                    new TeamProject()
+                    {
+                        ProjectId = p.Id,
+                        ProjectName = p.Name,
+                        AdminName = u.Nickname,
+                        ProjectLogo = AvatarSaveHelper.GetObject(p.Icon)
+                    }).ToList();
+
+            return Json(new
+            {
+                err_code = 0,
+                data = new
+                {
+                    isSuccess = true,
+                    msg = "",
+                    team = new
+                    {
+                        teamId = team.Id,
+                        teamName = team.Name,
+                        createTime = team.CreatedTime,
+                        adminName = adminName,
+                        members = members,
+                        teamProjects = teamProjects
+                    }
+                }
+            });
+            
         }
         
     }

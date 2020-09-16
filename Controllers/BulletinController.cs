@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace MeshBackend.Controllers
 {
     [ApiController]
-    [Route("api/mesh/bulletin")]
+    [Route("api/mesh")]
     [Produces("application/json")]
     public class BulletinController:Controller
     {
@@ -37,7 +37,7 @@ namespace MeshBackend.Controllers
             return HttpContext.Session.GetString(username) == null ? JsonReturnHelper.ErrorReturn(2, "User status error.") : null;
         }
         
-        public JsonResult CheckBulleti(string title, string description)
+        public JsonResult CheckBulletin(string title, string description)
         {
             if (title.IsNullOrEmpty() || title.Length > 50)
             {
@@ -50,7 +50,7 @@ namespace MeshBackend.Controllers
             }
 
             return null;
-        }
+        }    
 
         public class BulletinRequest
         {
@@ -63,6 +63,7 @@ namespace MeshBackend.Controllers
         
 
         [HttpGet]
+        [Route("bulletin")]
         public JsonResult QueryBulletin(string username, int projectId)
         {
             var checkUsername = CheckUsername(username);
@@ -102,6 +103,7 @@ namespace MeshBackend.Controllers
         }
 
         [HttpPost]
+        [Route("bulletin")]
         public JsonResult CreateBulletin(BulletinRequest request)
         {
             var checkUsername = CheckUsername(request.username);
@@ -211,6 +213,7 @@ namespace MeshBackend.Controllers
         }
 
         [HttpDelete]
+        [Route("bulletin")]
         public JsonResult DeleteBulletin(string username, int projectId, int bulletinId)
         {
             var checkResult = CheckUsername(username);
@@ -265,6 +268,7 @@ namespace MeshBackend.Controllers
         }
 
         [HttpPatch]
+        [Route("bulletin")]
         public JsonResult UpdateBulletin(BulletinRequest request)
         {
             var checkUsername = CheckUsername(request.username);

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace MeshBackend.Controllers
 {
     [ApiController]
-    [Route("api/mesh/notification")]
+    [Route("api/mesh")]
     [Produces("application/json")]
     public class FeedController:Controller
     {
@@ -43,6 +43,7 @@ namespace MeshBackend.Controllers
         }
         
         [HttpGet]
+        [Route("notification")]
         public JsonResult QueryNotification(string username)
         {
             var checkResult = CheckUsername(username);
@@ -115,6 +116,7 @@ namespace MeshBackend.Controllers
         }
 
         [HttpDelete]
+        [Route("notification")]
         public JsonResult DeleteNotification(string username, int type, int id)
         {
             var checkResult = CheckUsername(username);

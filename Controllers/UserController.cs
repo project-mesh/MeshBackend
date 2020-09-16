@@ -1,16 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Security.Cryptography;
-using System.Text.RegularExpressions;
-using Castle.Core.Internal;
 using MeshBackend.Helpers;
 using MeshBackend.Models;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace MeshBackend.Controllers
@@ -89,7 +83,23 @@ namespace MeshBackend.Controllers
                 }
             });
         }
-        
+
+        public JsonResult AdminReturnValue(Admin admin)
+        {
+            return Json(new
+            {
+                err_code = 0,
+                data = new
+                {
+                    isSuccess = true,
+                    msg = "",
+                    username = admin.Email,
+                    nickname = admin.Nickname,
+                    role = "admin"
+                }
+            });
+        }
+
         public bool CheckUserSession(string username)
         {
             if (HttpContext.Session.IsAvailable && HttpContext.Session.GetString(username) != null)
@@ -103,49 +113,7 @@ namespace MeshBackend.Controllers
             return false;
         }
 
-        public HashPassword GetHashPassword(string password)
-        {
-            byte[] salt = new byte[128 / 8];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(salt);
-            }
 
-            string passwordSalt = Convert.ToBase64String(salt);
-            string passwordDigest = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                password: password,
-                salt: salt,
-                prf: KeyDerivationPrf.HMACSHA1,
-                iterationCount: 1000,
-                numBytesRequested: 256 / 8
-            ));
-
-            return new HashPassword()
-            {
-                PasswordSalt = passwordSalt,
-                PasswordDigest = passwordDigest
-            };
-        }
-
-        public bool CheckHashPassword(string password, string passwordSalt, string passwordDigest)
-        {
-            var hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                password: password,
-                salt: Convert.FromBase64String(passwordSalt),
-                prf: KeyDerivationPrf.HMACSHA1,
-                iterationCount: 1000,
-                numBytesRequested: 256 / 8
-            ));
-            return hashed == passwordDigest;
-        }
-        
-
-
-        public class HashPassword
-        {
-            public string PasswordSalt { get; set; }
-            public string PasswordDigest { get;set; }
-        }
         
         [HttpPost]
         [Route("register")]
@@ -162,11 +130,13 @@ namespace MeshBackend.Controllers
             }
             
             var user = _meshContext.Users.FirstOrDefault(u => u.Email == request.username);
-            if (user != null)
+            var admin = _meshContext.Admins.FirstOrDefault(u => u.Email == request.username);
+            if (user != null || admin != null)
             {
                 return JsonReturnHelper.ErrorReturn(101, "User already exists.");
             }
-            HashPassword hashPassword = GetHashPassword(request.password);
+
+            PasswordCheckHelper.HashPassword hashPassword = PasswordCheckHelper.GetHashPassword(request.password);
             //Create new user
             var newUser = new User()
             {
@@ -209,10 +179,18 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(111, "Invalid password.");
             }
 
+            var admin = _meshContext.Admins.FirstOrDefault(u => u.Email == request.username);
+            if (admin != null &&
+                PasswordCheckHelper.CheckHashPassword(request.password, admin.PasswordSalt, admin.PasswordDigest))
+            {
+                HttpContext.Session.SetString(request.username, Guid.NewGuid().ToString());
+                return AdminReturnValue(admin);
+            }
+
             var user = _meshContext.Users.FirstOrDefault(u => u.Email == request.username);
-            
+
             //Check Password
-            if (user == null|| !CheckHashPassword(request.password, user.PasswordSalt, user.PasswordDigest))
+            if (user == null|| !PasswordCheckHelper.CheckHashPassword(request.password, user.PasswordSalt, user.PasswordDigest))
             {
                 return JsonReturnHelper.ErrorReturn(201, "Incorrect username or password.");
             }
@@ -252,11 +230,11 @@ namespace MeshBackend.Controllers
             var user = _meshContext.Users.FirstOrDefault(u => u.Email == request.username);
             
             //Check Password
-            if (user == null|| !CheckHashPassword(request.oldPassword, user.PasswordSalt, user.PasswordDigest))
+            if (user == null|| !PasswordCheckHelper.CheckHashPassword(request.oldPassword, user.PasswordSalt, user.PasswordDigest))
             {
                 return JsonReturnHelper.ErrorReturn(201, "Incorrect username or password.");
             }
-            HashPassword hashPassword = GetHashPassword(request.password);
+            PasswordCheckHelper.HashPassword hashPassword = PasswordCheckHelper.GetHashPassword(request.password);
             try
             {
                 user.PasswordDigest = hashPassword.PasswordDigest;
@@ -378,7 +356,5 @@ namespace MeshBackend.Controllers
                 }
             });
         }
-        
-        
     }
 }

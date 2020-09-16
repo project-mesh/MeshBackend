@@ -68,7 +68,7 @@ namespace MeshBackend.Controllers
                     gender = user.Gender,
                     status = user.Status,
                     description = user.Description,
-                    birthday = user.Birthday.ToString(),
+                    birthday = user.Birthday.ToString("yyyy-MM-dd"),
                     avatar = AvatarSaveHelper.GetObject(user.Avatar),
                     role = "user",
                     preference = new UserPreference()

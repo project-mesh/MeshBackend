@@ -68,7 +68,7 @@ namespace MeshBackend.Controllers
                     gender = user.Gender,
                     status = user.Status,
                     description = user.Description,
-                    birthday = user.Birthday.ToLongDateString(),
+                    birthday = user.Birthday.ToString(),
                     avatar = AvatarSaveHelper.GetObject(user.Avatar),
                     role = "user",
                     preference = new UserPreference()
@@ -145,6 +145,7 @@ namespace MeshBackend.Controllers
                 PasswordDigest = hashPassword.PasswordDigest,
                 PasswordSalt = hashPassword.PasswordSalt,
                 Avatar = AvatarSaveHelper.PutObject(""),
+                Birthday = Convert.ToDateTime("2020-01-01"),
                 ColorPreference = "blue",
                 LayoutPreference = "default",
                 RevealedPreference = "card"

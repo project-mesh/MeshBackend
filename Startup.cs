@@ -48,7 +48,9 @@ namespace MeshBackend
                 options.AddPolicy(name: MeshAllowSpecificOrigins,
                     builder =>
                     {
-                        builder.WithOrigins("http://localhost:8000")
+                        builder.WithOrigins("http://localhost:8000",
+                                "https://meshproject.me/",
+                                "http://meshproject.me/")
                             .AllowCredentials()
                             .AllowAnyHeader()
                             .AllowAnyMethod();

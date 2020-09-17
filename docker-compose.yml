@@ -1,5 +1,14 @@
 version: "3"
 services:
+  nginx:
+    image: "nginx:alpine"
+    ports:
+      - 0.0.0.0:443:443
+      - 0.0.0.0:8443:8443
+      - 0.0.0.0:9443:9443
+    volumes:
+      - ./nginx:/etc/nginx
+
   db: 
     image: "mysql:8"
     environment:
@@ -8,13 +17,13 @@ services:
       MYSQL_DATABASE: mesh
       MYSQL_USER: mesh
     volumes:
-      - /my/own/datadir:/var/lib/mysql
+      - ./.persistence/db:/var/lib/mysql
 
   app:
     build:
       context: .
     depends_on:
+      - nginx
       - db
     ports:
-      - 127.0.0.1:8080:8080
-
+      - 0.0.0.0:8080:8080

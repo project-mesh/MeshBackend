@@ -1,3 +1,5 @@
 /[Oo]bj
 /[Bb]in
-.vscode
+/nginx/conf.d/.cert
+/.vscode
+/.persistence

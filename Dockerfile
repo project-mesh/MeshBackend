@@ -15,5 +15,6 @@ RUN dotnet publish -c Release -o out
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1
 WORKDIR /app
 COPY --from=build-env /app/out .
-ENTRYPOINT ["dotnet", "MeshBackend.dll"]
+COPY ./wait-for-it.sh .
+ENTRYPOINT ["./wait-for-it.sh", "db:3306", "--", "dotnet", "MeshBackend.dll"]
 

@@ -87,7 +87,7 @@ namespace MeshBackend.Controllers
                     Name = b.Title,
                     Content = b.Content,
                     BoardId = b.BoardId,
-                    CreatedTime = b.CreatedTime
+                    CreatedTime = TimeStampConvertHelper.ConvertToTimeStamp(b.CreatedTime)
                 }).ToList();
             return Json(new
             {
@@ -207,7 +207,7 @@ namespace MeshBackend.Controllers
                         bulletinId = newBulletin.Id,
                         bullentinName = newBulletin.Title,
                         description = newBulletin.Content,
-                        createTime = newBulletin.CreatedTime
+                        createdTime = TimeStampConvertHelper.ConvertToTimeStamp(newBulletin.CreatedTime)
                     }
                 });
         }
@@ -334,7 +334,7 @@ namespace MeshBackend.Controllers
                     bulletinId = bulletin.Id,
                     bulletinName = bulletin.Title,
                     description = bulletin.Content,
-                    createTime = bulletin.CreatedTime
+                    createdTime = TimeStampConvertHelper.ConvertToTimeStamp(bulletin.CreatedTime)
                 }
             });
         }

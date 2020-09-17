@@ -102,7 +102,7 @@ namespace MeshBackend.Controllers
             //Find team members
             var teamCooperation = _meshContext.Cooperations
                 .Where(c => c.TeamId == team.Id);
-            var adminName = _meshContext.Users.First(u => u.Id == team.AdminId).Nickname;
+            var adminName = _meshContext.Users.First(u => u.Id == team.AdminId).Email;
             var members = _meshContext.Users
                 .Join(teamCooperation, u => u.Id, c => c.UserId, (u, c) =>
                     new Member()
@@ -122,7 +122,7 @@ namespace MeshBackend.Controllers
                     {
                         ProjectId = p.Id,
                         ProjectName = p.Name,
-                        AdminName = u.Nickname,
+                        AdminName = u.Email,
                         ProjectLogo = AvatarSaveHelper.GetObject(p.Icon)
                     }).ToList();
 
@@ -151,7 +151,7 @@ namespace MeshBackend.Controllers
                     {
                         teamId = team.Id,
                         teamName = team.Name,
-                        createTime = team.CreatedTime,
+                        createdTime = TimeStampConvertHelper.ConvertToTimeStamp(team.CreatedTime),
                         adminName = adminName,
                         members = members,
                         teamProjects = teamProjects
@@ -221,9 +221,9 @@ namespace MeshBackend.Controllers
                         team = new 
                         {
                             teamId = createdTeam.Id,
-                            createTime = createdTeam.CreatedTime,
+                            createdTime = TimeStampConvertHelper.ConvertToTimeStamp(createdTeam.CreatedTime),
                             teamName = createdTeam.Name,
-                            adminName = user.Nickname,
+                            adminName = user.Email,
                             members = teamMembers
                         }
                     }
@@ -508,7 +508,7 @@ namespace MeshBackend.Controllers
             //Find team members
             var teamCooperation = _meshContext.Cooperations
                 .Where(c => c.TeamId == team.Id);
-            var adminName = _meshContext.Users.First(u => u.Id == team.AdminId).Nickname;
+            var adminName = _meshContext.Users.First(u => u.Id == team.AdminId).Email;
             var members = _meshContext.Users
                 .Join(teamCooperation, u => u.Id, c => c.UserId, (u, c) =>
                     new Member()
@@ -528,7 +528,7 @@ namespace MeshBackend.Controllers
                     {
                         ProjectId = p.Id,
                         ProjectName = p.Name,
-                        AdminName = u.Nickname,
+                        AdminName = u.Email,
                         ProjectLogo = AvatarSaveHelper.GetObject(p.Icon)
                     }).ToList();
 
@@ -543,7 +543,7 @@ namespace MeshBackend.Controllers
                     {
                         teamId = team.Id,
                         teamName = team.Name,
-                        createTime = team.CreatedTime,
+                        createdTime = TimeStampConvertHelper.ConvertToTimeStamp(team.CreatedTime),
                         adminName = adminName,
                         members = members,
                         teamProjects = teamProjects

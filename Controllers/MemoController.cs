@@ -39,7 +39,7 @@ namespace MeshBackend.Controllers
             public int KnowledgeId { get; set; }
             public string KnowledgeName { get; set; }
             public string HyperLink { get; set; }
-            public DateTime CreateTime { get; set; }
+            public long CreatedTime { get; set; }
             public String UploaderName { get; set; }
         }
 
@@ -143,7 +143,7 @@ namespace MeshBackend.Controllers
             {
                 KnowledgeName = request.knowledgeName,
                 HyperLink = request.hyperlink,
-                CreateTime = newMemo.CreatedTime,
+                CreatedTime = TimeStampConvertHelper.ConvertToTimeStamp(newMemo.CreatedTime),
                 KnowledgeId = newMemo.Id,
                 UploaderName = request.username
             });
@@ -211,7 +211,7 @@ namespace MeshBackend.Controllers
             {
                 KnowledgeName = request.knowledgeName,
                 HyperLink = request.hyperlink,
-                CreateTime = newMemo.CreatedTime,
+                CreatedTime = TimeStampConvertHelper.ConvertToTimeStamp(newMemo.CreatedTime),
                 KnowledgeId = newMemo.Id,
                 UploaderName = request.username
             });
@@ -364,7 +364,7 @@ namespace MeshBackend.Controllers
                     KnowledgeId = m.Id,
                     KnowledgeName = m.Title,
                     HyperLink = m.Text,
-                    CreateTime  = m.CreatedTime,
+                    CreatedTime  = TimeStampConvertHelper.ConvertToTimeStamp(m.CreatedTime),
                     UploaderName = u.Nickname
                 }).ToList();
 
@@ -406,7 +406,7 @@ namespace MeshBackend.Controllers
                     KnowledgeId = m.Id,
                     KnowledgeName = m.Title,
                     HyperLink = m.Text,
-                    CreateTime  = m.CreatedTime,
+                    CreatedTime  = TimeStampConvertHelper.ConvertToTimeStamp(m.CreatedTime),
                     UploaderName = u.Nickname
                 }).ToList();
 
@@ -479,7 +479,7 @@ namespace MeshBackend.Controllers
 
             return MemoResult(new MemoInfo()
             {
-                CreateTime = knowledge.CreatedTime,
+                CreatedTime = TimeStampConvertHelper.ConvertToTimeStamp(knowledge.CreatedTime),
                 HyperLink = knowledge.Text,
                 KnowledgeId = knowledge.Id,
                 KnowledgeName = knowledge.Title,
@@ -551,7 +551,7 @@ namespace MeshBackend.Controllers
 
             return MemoResult(new MemoInfo()
             {
-                CreateTime = knowledge.CreatedTime,
+                CreatedTime = TimeStampConvertHelper.ConvertToTimeStamp(knowledge.CreatedTime),
                 HyperLink = knowledge.Text,
                 KnowledgeId = knowledge.Id,
                 KnowledgeName = knowledge.Title,

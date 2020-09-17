@@ -45,7 +45,7 @@ namespace MeshBackend.Controllers
                         TeamId = t.Id,
                         TeamName = t.Name,
                         AdminId = t.AdminId,
-                        CreateTIme = t.CreatedTime.ToString(),
+                        CreatedTIme = TimeStampConvertHelper.ConvertToTimeStamp(t.CreatedTime).ToString(),
                         AdminName = _meshContext.Users.First(u=>u.Id==t.AdminId).Nickname
                     }).ToList();
 

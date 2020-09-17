@@ -196,7 +196,7 @@ namespace MeshBackend.Controllers
                 }
             }
 
-            return ProjectResult(newProject, admin.Nickname);
+            return ProjectResult(newProject, admin.Email);
         }
 
         [HttpDelete]
@@ -367,13 +367,13 @@ namespace MeshBackend.Controllers
             
             //Check if user is in the project
             var projectCheckResult = _permissionCheck.CheckProjectPermission(username, project);
-            if (projectCheckResult == PermissionCheckHelper.ProjectOutsider)
+            if (projectCheckResult == PermissionCheckHelper.ProjectOutsider && !project.Publicity)
             {
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");
             }
 
             var user = _meshContext.Users.First(u => u.Id == project.AdminId);
-            return ProjectResult(project, user.Nickname);
+            return ProjectResult(project, user.Email);
         }
 
         [HttpPatch]
@@ -445,7 +445,7 @@ namespace MeshBackend.Controllers
             }
             
             var user = _meshContext.Users.First(u => u.Id == project.AdminId);
-            return ProjectResult(project, user.Nickname);
+            return ProjectResult(project, user.Email);
         }
         
     }

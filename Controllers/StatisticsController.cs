@@ -239,7 +239,7 @@ namespace MeshBackend.Controllers
                         TeamName = t.Name,
                         AdminId = t.AdminId,
                         AdminName = _meshContext.Users.First(s=>s.Id==t.AdminId).Nickname,
-                        CreateTIme = t.CreatedTime.ToString()
+                        CreatedTIme = t.CreatedTime.ToString()
                     })
                     .ToList();
                 users.Add(new UserInfo()

@@ -63,7 +63,7 @@ namespace MeshBackend.Helpers
         
         public string AdminName { get; set; }
         
-        public string CreateTIme { get; set; }
+        public string CreatedTIme { get; set; }
         
     }
     

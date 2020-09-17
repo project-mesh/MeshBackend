@@ -322,6 +322,7 @@ namespace MeshBackend.Controllers
             try
             {
                 _meshContext.Teams.Remove(team);
+                _meshContext.SaveChanges();
             }
             catch (Exception e)
             {
@@ -496,6 +497,7 @@ namespace MeshBackend.Controllers
             {
                 team.Name = request.teamName;
                 _meshContext.Teams.Update(team);
+                _meshContext.SaveChanges();
             }
             catch (Exception e)
             {

@@ -119,11 +119,14 @@ namespace MeshBackend.Controllers
                     });
                 }
                 
-                
 
                 var location = u.Address.Split(" ")[0];
-                var userLocation = userLocationList.Find(a => a.Location == location);
-                if (userLocation == null)
+                try
+                {
+                    var userLocation = userLocationList.Find(a => a.Location == location);
+                    ++userLocation.UserCount;
+                }
+                catch
                 {
                     userLocationList.Add(new UserLocation()
                     {
@@ -131,10 +134,7 @@ namespace MeshBackend.Controllers
                         UserCount = 1
                     });
                 }
-                else
-                {
-                    ++userLocation.UserCount;
-                }
+                
 
             }
 

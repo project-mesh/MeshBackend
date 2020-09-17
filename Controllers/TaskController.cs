@@ -68,6 +68,23 @@ namespace MeshBackend.Controllers
             public List<SubTaskInfo> SubTasks { get; set; }
         }
 
+        public class TeamTaskInfo
+        {
+            public int TaskId { get; set; }
+            public string TaskName { get; set; }
+            public int ProjectId { get; set; }
+            public string ProjectName { get; set; }
+            public DateTime CreatedTime { get; set; }
+            public DateTime EndTime { get; set; }
+            public string Founder { get; set; }
+            public int Priority { get; set; }
+            public string Principal { get; set; }
+            public string Description { get; set; }
+            public Status Status { get; set; }
+            public bool IsFinished { get; set; }
+            public List<SubTaskInfo> SubTasks { get; set; }
+        }
+        
         private static Status GetStatus(DateTime time,bool isFinished)
         {
             if (isFinished)
@@ -106,6 +123,20 @@ namespace MeshBackend.Controllers
             });
         }
 
+        public JsonResult TeamTaskListResult(List<TeamTaskInfo> tasks)
+        {
+            return Json(new
+            {
+                err_code = 0,
+                data = new
+                {
+                    isSuccess = true,
+                    msg = "",
+                    tasks = tasks
+                }
+            });
+        }
+        
         public JsonResult SubTaskResult(SubTaskInfo subTask)
         {
             return Json(new
@@ -146,13 +177,6 @@ namespace MeshBackend.Controllers
                 .Where(a => a.TaskId == taskId && a.Title == title)
                 .Join(_meshContext.Users, n => n.UserId, u => u.Id, (n, u) => u.Nickname)
                 .ToList();
-        }
-        
-        public class QueryRequest
-        {
-            public string username { get; set; }
-            public int teamId { get; set; }
-            public int projectId { get; set; }
         }
         
         public class TaskRequest
@@ -829,37 +853,43 @@ namespace MeshBackend.Controllers
                 .Join(_meshContext.Projects, t => t.ProjectId, p => p.Id, (t, p) => new
                 {
                     projectId = p.Id,
+                    projectName = p.Name,
                     projectAdminId = p.AdminId,
                     boardId = t.Id
                 })
                 .Join(_meshContext.Tasks, t => t.boardId, s => s.BoardId, (t, s) => new
                 {
-                    t.projectAdminId,
+                    t,
                     s
                 })
-                .Join(_meshContext.Users, t => t.projectAdminId, u => u.Id, (t, u) => new
+                .Join(_meshContext.Users, pp => pp.t.projectAdminId, u => u.Id, (t, u) => new
                 {
                     Founder = u.Nickname,
-                    task = t.s
+                    task = t.s,
+                    projectId = t.t.projectId,
+                    projectName = t.t.projectName
                 })
-                .Select(m => new TaskInfo()
+                .Select(m => new TeamTaskInfo()
                 {
-                    Id = m.task.Id,
+                    ProjectId = m.projectId,
+                    ProjectName = m.projectName,
+                    TaskId = m.task.Id,
                     CreatedTime = m.task.CreatedTime,
                     Description = m.task.Description,
                     EndTime = m.task.EndTime,
                     Founder = m.Founder,
-                    Name = m.task.Name,
-                    isFinished = m.task.Finished,
+                    TaskName = m.task.Name,
+                    IsFinished = m.task.Finished,
                     Principal = _meshContext.Users.First(u => u.Id == m.task.LeaderId).Nickname,
+                    Priority = m.task.Priority
                 })
                 .ToList();
 
             foreach (var task in tasks)
             {
-                task.Status = GetStatus(task.EndTime, task.isFinished);
+                task.Status = GetStatus(task.EndTime, task.IsFinished);
                 task.SubTasks = _meshContext.Subtasks
-                    .Where(b => b.TaskId == task.Id)
+                    .Where(b => b.TaskId == task.TaskId)
                     .Select(s => new SubTaskInfo()
                     {
                         Title = s.Title,
@@ -879,7 +909,7 @@ namespace MeshBackend.Controllers
                 }
             }
             
-            return TaskListResult(tasks);
+            return TeamTaskListResult(tasks);
         }
         
     }

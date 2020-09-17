@@ -238,7 +238,7 @@ namespace MeshBackend.Controllers
             var teamCheckResult = _permissionCheck.CheckTeamPermission(username, team);
             if (teamCheckResult ==PermissionCheckHelper.TeamOutsider)
             {
-                return JsonReturnHelper.ErrorReturn(702, "Invalid username.");
+                return JsonReturnHelper.ErrorReturn(702, "User is not in the team.");
             }
             
             //Check if user is the admin of the project

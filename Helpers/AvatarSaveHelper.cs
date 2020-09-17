@@ -27,7 +27,7 @@ namespace MeshBackend.Helpers
             }
             catch
             {
-                return null;
+                return name ?? objectName;
             }
         }
 

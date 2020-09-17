@@ -207,7 +207,7 @@ namespace MeshBackend.Controllers
             return UserReturnValue(user);
         }
 
-        [HttpPut]
+        [HttpPatch]
         [Route("user/password")]
         public JsonResult UpdateUserPassword(UserRequest request)
         {

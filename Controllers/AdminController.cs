@@ -19,7 +19,7 @@ namespace MeshBackend.Controllers
         private readonly ILogger _logger;
         private readonly IConfiguration _configuration;
 
-        public AdminController(MeshContext meshContext, ILogger logger,IConfiguration configuration)
+        public AdminController(MeshContext meshContext, ILogger<AdminController> logger,IConfiguration configuration)
         {
             _meshContext = meshContext;
             _logger = logger;

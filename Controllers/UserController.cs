@@ -148,7 +148,10 @@ namespace MeshBackend.Controllers
                 Birthday = Convert.ToDateTime("2020-01-01"),
                 ColorPreference = "blue",
                 LayoutPreference = "default",
-                RevealedPreference = "card"
+                RevealedPreference = "card",
+                Address = "xx yy zz",
+                Gender = 0,
+                Status = 2
             };
             //try to save the user
             try

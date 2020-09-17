@@ -92,19 +92,25 @@ namespace MeshBackend.Controllers
         [Route("user")]
         public JsonResult QueryUserStatistics()
         {
-            var maleUser = _meshContext.Users.Count(u => u.Gender == Male);
-            var femaleUser = _meshContext.Users.Count(u => u.Gender == Female);
-            var unknownUser = _meshContext.Users.Count(u => u.Gender == Unknown);
+
+            var users = _meshContext.Users.ToList();
+            var maleUser = users.Count(u => u.Gender == Male);
+            var femaleUser = users.Count(u => u.Gender == Female);
+            var unknownUser = users.Count(u => u.Gender == Unknown);
 
             var userAgeList = new List<UserAge>();
             var userLocationList = new List<UserLocation>();
 
-            var users = _meshContext.Users;
+
             foreach (var u in users)
             {
                 var age = GetAgeByBirthday(u.Birthday);
-                var userAge = userAgeList.Find(a => a.Age == age);
-                if (userAge == null)
+                try
+                {
+                    var userAge = userAgeList.Find(a => a.Age == age);
+                    ++userAge.UserCount;
+                }
+                catch 
                 {
                     userAgeList.Add(new UserAge()
                     {
@@ -112,14 +118,24 @@ namespace MeshBackend.Controllers
                         UserCount = 1
                     });
                 }
+                
+                
+
+                var location = u.Address.Split(" ")[0];
+                var userLocation = userLocationList.Find(a => a.Location == location);
+                if (userLocation == null)
+                {
+                    userLocationList.Add(new UserLocation()
+                    {
+                        Location = location,
+                        UserCount = 1
+                    });
+                }
                 else
                 {
-                    ++userAge.UserCount;
+                    ++userLocation.UserCount;
                 }
-                
-                //Missing address statistics because the address format is not determined.
-                
-                
+
             }
 
             return Json(new
@@ -152,14 +168,17 @@ namespace MeshBackend.Controllers
 
             var historyTotalUser = new List<UserCountInfo>();
             
+            var totalUser = _meshContext.Users.ToList();
+            var timeNow = DateTime.Now.Date;
+
             for (var i = 0; i < itemCount; ++i)
             {
-                var totalUser = _meshContext.Users
-                    .Count(u => u.CreatedTime.Date < DateTime.Now.Date.AddDays(-i * timeInterval) &&
-                                u.CreatedTime.Date >= DateTime.Now.Date.AddDays(-(i + 1) * timeInterval));
+                var userCount = totalUser.Count(u => u.CreatedTime.Date <= timeNow.AddDays(-i * timeInterval) &&
+                                                     u.CreatedTime.Date >
+                                                     timeNow.Date.AddDays(-(i + 1) * timeInterval));
                 historyTotalUser.Add(new UserCountInfo()
                 {
-                    TotalUser = totalUser
+                    TotalUser = userCount
                 });
             }
 

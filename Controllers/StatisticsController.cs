@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Castle.Core.Internal;
 using MeshBackend.Helpers;
 using MeshBackend.Models;
 using Microsoft.AspNetCore.Http;
@@ -118,9 +119,10 @@ namespace MeshBackend.Controllers
                         UserCount = 1
                     });
                 }
-                
 
-                var location = u.Address.Split(" ")[0];
+
+
+                var location = u.Address.Split(' ')[0];
                 try
                 {
                     var userLocation = userLocationList.Find(a => a.Location == location);
@@ -128,11 +130,14 @@ namespace MeshBackend.Controllers
                 }
                 catch
                 {
-                    userLocationList.Add(new UserLocation()
+                    if (!location.IsNullOrEmpty())
                     {
-                        Location = location,
-                        UserCount = 1
-                    });
+                        userLocationList.Add(new UserLocation()
+                        {
+                            Location = location,
+                            UserCount = 1
+                        });
+                    }
                 }
                 
 

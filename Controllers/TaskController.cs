@@ -523,9 +523,9 @@ namespace MeshBackend.Controllers
             {
                 return JsonReturnHelper.ErrorReturn(608, "subTaskName already exists.");
             }
-
+            
             var principalUser = _meshContext.Users.FirstOrDefault(u => u.Email == request.principal);
-            if (principalUser == null)
+            if (principalUser == null && !request.principal.IsNullOrEmpty())
             {
                 return JsonReturnHelper.ErrorReturn(603, "Principal does not exist.");
             }
@@ -546,7 +546,7 @@ namespace MeshBackend.Controllers
                     {
                         TaskId = newSubTask.TaskId,
                         Title = newSubTask.Title,
-                        UserId = principalUser.Id
+                        UserId = principalUser?.Id ?? user.Id
                     });
                     _meshContext.SaveChanges();
                     transaction.Commit();

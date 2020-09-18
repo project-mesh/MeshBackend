@@ -73,7 +73,7 @@ namespace MeshBackend.Controllers
                     projectId = f.project.Id,
                     title = f.bulletin.Title,
                     description = f.bulletin.Content,
-                    createdTime = TimeStampConvertHelper.ConvertToTimeStamp(f.bulletin.CreatedTime),
+                    createTime = TimeStampConvertHelper.ConvertToTimeStamp(f.bulletin.CreatedTime),
                 }).ToList();
 
             var taskFeeds = _meshContext.TaskFeeds
@@ -95,7 +95,7 @@ namespace MeshBackend.Controllers
                     projectId = f.project.Id,
                     title = f.task.Name,
                     description = f.task.Description,
-                    createdTime = TimeStampConvertHelper.ConvertToTimeStamp(f.task.CreatedTime),
+                    createTime = TimeStampConvertHelper.ConvertToTimeStamp(f.task.CreatedTime),
                     isFinished = f.task.Finished,
                 }).ToList();
 

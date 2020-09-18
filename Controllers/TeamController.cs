@@ -151,7 +151,7 @@ namespace MeshBackend.Controllers
                     {
                         teamId = team.Id,
                         teamName = team.Name,
-                        createdTime = TimeStampConvertHelper.ConvertToTimeStamp(team.CreatedTime),
+                        createTime = TimeStampConvertHelper.ConvertToTimeStamp(team.CreatedTime),
                         adminName = adminName,
                         members = members,
                         teamProjects = teamProjects
@@ -221,7 +221,7 @@ namespace MeshBackend.Controllers
                         team = new 
                         {
                             teamId = createdTeam.Id,
-                            createdTime = TimeStampConvertHelper.ConvertToTimeStamp(createdTeam.CreatedTime),
+                            createTime = TimeStampConvertHelper.ConvertToTimeStamp(createdTeam.CreatedTime),
                             teamName = createdTeam.Name,
                             adminName = user.Email,
                             members = teamMembers
@@ -543,7 +543,7 @@ namespace MeshBackend.Controllers
                     {
                         teamId = team.Id,
                         teamName = team.Name,
-                        createdTime = TimeStampConvertHelper.ConvertToTimeStamp(team.CreatedTime),
+                        createTime = TimeStampConvertHelper.ConvertToTimeStamp(team.CreatedTime),
                         adminName = adminName,
                         members = members,
                         teamProjects = teamProjects

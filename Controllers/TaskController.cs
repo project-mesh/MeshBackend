@@ -46,7 +46,7 @@ namespace MeshBackend.Controllers
         {
             public int TaskId { get; set; }
             public string Title { get; set; }
-            public long CreatedTime { get; set; }
+            public long CreateTime { get; set; }
             public string Founder { get; set; }
             public bool isFinished { get; set; }
             public Status Status { get; set; }
@@ -58,7 +58,7 @@ namespace MeshBackend.Controllers
         {
             public int Id { get; set; }
             public string Name { get; set; }
-            public long CreatedTime { get; set; }
+            public long CreateTime { get; set; }
             public DateTime EndTime { get; set; }
             public string Founder { get; set; }
             public string Principal { get; set; }
@@ -74,7 +74,7 @@ namespace MeshBackend.Controllers
             public string TaskName { get; set; }
             public int ProjectId { get; set; }
             public string ProjectName { get; set; }
-            public long CreatedTime { get; set; }
+            public long CreateTime { get; set; }
             public DateTime EndTime { get; set; }
             public string Founder { get; set; }
             public int Priority { get; set; }
@@ -159,7 +159,7 @@ namespace MeshBackend.Controllers
                 {
                     Title = s.Title,
                     TaskId = s.TaskId,
-                    CreatedTime = TimeStampConvertHelper.ConvertToTimeStamp(s.CreatedTime),
+                    CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(s.CreatedTime),
                     Description = s.Description,
                     Founder = founder,
                     Principal = _meshContext.Assigns
@@ -298,7 +298,7 @@ namespace MeshBackend.Controllers
             return TaskResult(new TaskInfo()
             {
                 Name = task.Name,
-                CreatedTime = TimeStampConvertHelper.ConvertToTimeStamp(task.CreatedTime),
+                CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(task.CreatedTime),
                 Description = task.Description,
                 EndTime = task.EndTime,
                 Founder = user.Nickname,
@@ -452,7 +452,7 @@ namespace MeshBackend.Controllers
             return TaskResult(new TaskInfo()
             {    
                 Id = task.Id,
-                CreatedTime = TimeStampConvertHelper.ConvertToTimeStamp(task.CreatedTime),
+                CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(task.CreatedTime),
                 Description = task.Description,
                 EndTime = task.EndTime,
                 Founder = founder.Nickname,
@@ -562,7 +562,7 @@ namespace MeshBackend.Controllers
             return SubTaskResult(new SubTaskInfo()
             {
                 TaskId = newSubTask.TaskId,
-                CreatedTime = TimeStampConvertHelper.ConvertToTimeStamp(newSubTask.CreatedTime),
+                CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(newSubTask.CreatedTime),
                 Description = newSubTask.Description,
                 Founder = user.Nickname,
                 Title = newSubTask.Title,
@@ -734,7 +734,7 @@ namespace MeshBackend.Controllers
 
             return SubTaskResult(new SubTaskInfo()
                 {
-                    CreatedTime = TimeStampConvertHelper.ConvertToTimeStamp(subTask.CreatedTime),
+                    CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(subTask.CreatedTime),
                     Description = subTask.Description,
                     Founder = user.Nickname,
                     TaskId = subTask.TaskId,
@@ -780,7 +780,7 @@ namespace MeshBackend.Controllers
                 .Select(s=>new TaskInfo()
                 {
                     Id = s.Id,
-                    CreatedTime = TimeStampConvertHelper.ConvertToTimeStamp(s.CreatedTime),
+                    CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(s.CreatedTime),
                     Description = s.Description,
                     EndTime = s.EndTime,
                     Founder = founder.Nickname,
@@ -793,7 +793,7 @@ namespace MeshBackend.Controllers
                         {
                             Title = e.Title,
                             TaskId = e.TaskId,
-                            CreatedTime = TimeStampConvertHelper.ConvertToTimeStamp(e.CreatedTime),
+                            CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(e.CreatedTime),
                             Description = e.Description,
                             isFinished = e.Finished,
                             Founder = founder.Nickname,
@@ -874,7 +874,7 @@ namespace MeshBackend.Controllers
                     ProjectId = m.projectId,
                     ProjectName = m.projectName,
                     TaskId = m.task.Id,
-                    CreatedTime = TimeStampConvertHelper.ConvertToTimeStamp(m.task.CreatedTime),
+                    CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(m.task.CreatedTime),
                     Description = m.task.Description,
                     EndTime = m.task.EndTime,
                     Founder = m.Founder,
@@ -894,7 +894,7 @@ namespace MeshBackend.Controllers
                     {
                         Title = s.Title,
                         TaskId = s.TaskId,
-                        CreatedTime = TimeStampConvertHelper.ConvertToTimeStamp(s.CreatedTime),
+                        CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(s.CreatedTime),
                         Description = s.Description,
                         Founder = task.Founder, 
                         Principal = _meshContext.Assigns

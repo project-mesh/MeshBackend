@@ -52,7 +52,7 @@ namespace MeshBackend.Controllers
                 {
                     isSuccess = true,
                     msg = "",
-                    knowledgeBase = memo
+                    knowledge = memo
                 }
             });
         }

@@ -46,21 +46,21 @@ namespace MeshBackend.Controllers
         public class SubTaskInfo
         {
             public int TaskId { get; set; }
-            public string Title { get; set; }
+            public string TaskName { get; set; }
             public long CreateTime { get; set; }
             public string Founder { get; set; }
             public bool isFinished { get; set; }
             public Status Status { get; set; }
-            public List<string> Principal { get; set; }
+            public string Principal { get; set; }
             public string Description { get; set; }
         }
 
         public class TaskInfo
         {
-            public int Id { get; set; }
+            public int TaskId { get; set; }
             public string TaskName { get; set; }
             public long CreateTime { get; set; }
-            public DateTime Deadline { get; set; }
+            public string Deadline { get; set; }
             public string Founder { get; set; }
             public string Principal { get; set; }
             public string Description { get; set; }
@@ -79,7 +79,7 @@ namespace MeshBackend.Controllers
             public int ProjectId { get; set; }
             public string ProjectName { get; set; }
             public long CreateTime { get; set; }
-            public DateTime EndTime { get; set; }
+            public string Deadline { get; set; }
             public string Founder { get; set; }
             public int Priority { get; set; }
             public string Principal { get; set; }
@@ -161,26 +161,26 @@ namespace MeshBackend.Controllers
                 .Where(s => s.TaskId == taskId)
                 .Select(s => new SubTaskInfo()
                 {
-                    Title = s.Title,
+                    TaskName = s.Title,
                     TaskId = s.TaskId,
                     CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(s.CreatedTime),
                     Description = s.Description,
                     Founder = founder,
                     Principal = _meshContext.Assigns
                         .Where(a => a.TaskId == taskId && a.Title == s.Title)
-                        .Join(_meshContext.Users, n => n.UserId, u => u.Id, (n, u) => u.Nickname)
-                        .ToList()
+                        .Join(_meshContext.Users, n => n.UserId, u => u.Id, (n, u) => u.Email)
+                        .First()
                 })
                 .ToList();
             return subTasks;
         }
 
-        public List<string> GetSubTaskPrincipals(int taskId, string title)
+        public string GetSubTaskPrincipals(int taskId, string title)
         {
             return _meshContext.Assigns
                 .Where(a => a.TaskId == taskId && a.Title == title)
-                .Join(_meshContext.Users, n => n.UserId, u => u.Id, (n, u) => u.Nickname)
-                .ToList();
+                .Join(_meshContext.Users, n => n.UserId, u => u.Id, (n, u) => u.Email)
+                .First();
         }
         
         public class TaskRequest
@@ -304,9 +304,9 @@ namespace MeshBackend.Controllers
                 TaskName = task.Name,
                 CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(task.CreatedTime),
                 Description = task.Description,
-                Deadline = task.EndTime,
+                Deadline = task.EndTime.ToString("yyyy-MM-dd"),
                 Founder = user.Nickname,
-                Id = task.Id,
+                TaskId = task.Id,
                 Priority = task.Priority,
                 isFinished = task.Finished,
                 Principal = principalUser.Nickname,
@@ -456,10 +456,10 @@ namespace MeshBackend.Controllers
             
             return TaskResult(new TaskInfo()
             {    
-                Id = task.Id,
+                TaskId = task.Id,
                 CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(task.CreatedTime),
                 Description = task.Description,
-                Deadline = task.EndTime,
+                Deadline = task.EndTime.ToString("yyyy-MM-dd"),
                 Founder = founder.Nickname,
                 TaskName = task.Name,
                 isFinished = task.Finished,
@@ -571,7 +571,7 @@ namespace MeshBackend.Controllers
                 CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(newSubTask.CreatedTime),
                 Description = newSubTask.Description,
                 Founder = user.Nickname,
-                Title = newSubTask.Title,
+                TaskName = newSubTask.Title,
                 isFinished = newSubTask.Finished,
                 Status = GetStatus(task.EndTime,newSubTask.Finished),
                 Principal = GetSubTaskPrincipals(newSubTask.TaskId,newSubTask.Title)
@@ -744,7 +744,7 @@ namespace MeshBackend.Controllers
                     Description = subTask.Description,
                     Founder = user.Nickname,
                     TaskId = subTask.TaskId,
-                    Title = subTask.Title,
+                    TaskName = subTask.Title,
                     isFinished = subTask.Finished,
                     Status = GetStatus(task.EndTime,subTask.Finished),
                     Principal = GetSubTaskPrincipals(subTask.TaskId,subTask.Title)
@@ -785,10 +785,10 @@ namespace MeshBackend.Controllers
                 .Where(s => s.BoardId == board.Id)
                 .Select(s=>new TaskInfo()
                 {
-                    Id = s.Id,
+                    TaskId = s.Id,
                     CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(s.CreatedTime),
                     Description = s.Description,
-                    Deadline = s.EndTime,
+                    Deadline = s.EndTime.ToString("yyyy-MM-dd"),
                     Founder = founder.Nickname,
                     isFinished = s.Finished,
                     TaskName = s.Name,
@@ -798,7 +798,7 @@ namespace MeshBackend.Controllers
                         .Where(b => b.TaskId == s.Id)
                         .Select(e => new SubTaskInfo()
                         {
-                            Title = e.Title,
+                            TaskName = e.Title,
                             TaskId = e.TaskId,
                             CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(e.CreatedTime),
                             Description = e.Description,
@@ -806,8 +806,8 @@ namespace MeshBackend.Controllers
                             Founder = founder.Nickname,
                             Principal = _meshContext.Assigns
                                 .Where(a => a.TaskId == e.TaskId && a.Title == e.Title)
-                                .Join(_meshContext.Users, n => n.UserId, u => u.Id, (n, u) => u.Nickname)
-                                .ToList()
+                                .Join(_meshContext.Users, n => n.UserId, u => u.Id, (n, u) => u.Email)
+                                .First()
                         })
                         .ToList()
                 })
@@ -815,10 +815,10 @@ namespace MeshBackend.Controllers
 
             foreach (var task in tasks)
             {
-                task.Status = GetStatus(task.Deadline, task.isFinished);
+                task.Status = GetStatus(Convert.ToDateTime(task.Deadline), task.isFinished);
                 foreach (var subTask in task.SubTasks)
                 {
-                    subTask.Status = GetStatus(task.Deadline, subTask.isFinished);
+                    subTask.Status = GetStatus(Convert.ToDateTime(task.Deadline), subTask.isFinished);
                 }
             }
             
@@ -883,7 +883,7 @@ namespace MeshBackend.Controllers
                     TaskId = m.task.Id,
                     CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(m.task.CreatedTime),
                     Description = m.task.Description,
-                    EndTime = m.task.EndTime,
+                    Deadline = m.task.EndTime.ToString("yyyy-MM-dd"),
                     Founder = m.Founder,
                     TaskName = m.task.Name,
                     IsFinished = m.task.Finished,
@@ -894,25 +894,25 @@ namespace MeshBackend.Controllers
 
             foreach (var task in tasks)
             {
-                task.Status = GetStatus(task.EndTime, task.IsFinished);
+                task.Status = GetStatus(Convert.ToDateTime(task.Deadline), task.IsFinished);
                 task.SubTasks = _meshContext.Subtasks
                     .Where(b => b.TaskId == task.TaskId)
                     .Select(s => new SubTaskInfo()
                     {
-                        Title = s.Title,
+                        TaskName = s.Title,
                         TaskId = s.TaskId,
                         CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(s.CreatedTime),
                         Description = s.Description,
                         Founder = task.Founder, 
                         Principal = _meshContext.Assigns
                             .Where(a => a.TaskId == s.TaskId && a.Title == s.Title)
-                            .Join(_meshContext.Users, n => n.UserId, u => u.Id, (n, u) => u.Nickname)
-                            .ToList()
+                            .Join(_meshContext.Users, n => n.UserId, u => u.Id, (n, u) => u.Email)
+                            .First()
                     })
                     .ToList();
                 foreach (var subTask in task.SubTasks)
                 {
-                    subTask.Status = GetStatus(task.EndTime, subTask.isFinished);
+                    subTask.Status = GetStatus(Convert.ToDateTime(task.Deadline), subTask.isFinished);
                 }
             }
             

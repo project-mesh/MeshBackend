@@ -35,15 +35,10 @@ namespace MeshBackend.Helpers
         {
             var client = new OssClient(endpoint, accessKeyId, accessKeysecret);
             try
-            {
-                var obj = client.GetObject(bucketName, objectName);
-                using (var requestStream = obj.Content)
-                {
-                    var buf = new byte[maxLength];
-                    var len = requestStream.Read(buf, 0, maxLength);
-                    var str = Encoding.ASCII.GetString(buf);
-                    return str.Split("\0")[0];
-                }
+            { 
+                var req = new GeneratePresignedUriRequest(bucketName,objectName,SignHttpMethod.Get);
+                var uri = client.GeneratePresignedUri(req);
+                return uri.ToString();
             }
             catch 
             {

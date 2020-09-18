@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -30,7 +31,8 @@ namespace MeshBackend.Models
         [ForeignKey("CollectionId")]
         public TeamMemoCollection TeamMemoCollection { get; set; }
         
-        public User User { get; set; }
+        [ForeignKey("UserId")]
+        public List<User> User { get; set; }
 
     }
 }

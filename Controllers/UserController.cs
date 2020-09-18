@@ -65,6 +65,7 @@ namespace MeshBackend.Controllers
                     msg = "",
                     username = user.Email,
                     nickname = user.Nickname,
+                    address = user.Address,
                     gender = user.Gender,
                     status = user.Status,
                     description = user.Description,

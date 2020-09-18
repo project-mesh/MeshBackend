@@ -42,7 +42,7 @@ namespace MeshBackend.Helpers
                     var buf = new byte[maxLength];
                     var len = requestStream.Read(buf, 0, maxLength);
                     var str = Encoding.ASCII.GetString(buf);
-                    return str;
+                    return str.Split("\0")[0];
                 }
             }
             catch 

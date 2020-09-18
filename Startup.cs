@@ -49,8 +49,8 @@ namespace MeshBackend
                     builder =>
                     {
                         builder.WithOrigins("http://localhost:8000",
-                                "https://meshproject.me/",
-                                "http://meshproject.me/")
+                                "https://meshproject.me",
+                                "http://meshproject.me")
                             .AllowCredentials()
                             .AllowAnyHeader()
                             .AllowAnyMethod();

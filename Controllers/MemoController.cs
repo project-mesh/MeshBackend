@@ -38,7 +38,7 @@ namespace MeshBackend.Controllers
         {
             public int KnowledgeId { get; set; }
             public string KnowledgeName { get; set; }
-            public string HyperLink { get; set; }
+            public string Hyperlink { get; set; }
             public long CreateTime { get; set; }
             public String UploaderName { get; set; }
         }
@@ -142,7 +142,7 @@ namespace MeshBackend.Controllers
             return MemoResult(new MemoInfo()
             {
                 KnowledgeName = request.knowledgeName,
-                HyperLink = request.hyperlink,
+                Hyperlink = request.hyperlink,
                 CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(newMemo.CreatedTime),
                 KnowledgeId = newMemo.Id,
                 UploaderName = request.username
@@ -210,7 +210,7 @@ namespace MeshBackend.Controllers
             return MemoResult(new MemoInfo()
             {
                 KnowledgeName = request.knowledgeName,
-                HyperLink = request.hyperlink,
+                Hyperlink = request.hyperlink,
                 CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(newMemo.CreatedTime),
                 KnowledgeId = newMemo.Id,
                 UploaderName = request.username
@@ -363,7 +363,7 @@ namespace MeshBackend.Controllers
                 {
                     KnowledgeId = m.Id,
                     KnowledgeName = m.Title,
-                    HyperLink = m.Text,
+                    Hyperlink = m.Text,
                     CreateTime  = TimeStampConvertHelper.ConvertToTimeStamp(m.CreatedTime),
                     UploaderName = u.Nickname
                 }).ToList();
@@ -405,7 +405,7 @@ namespace MeshBackend.Controllers
                 {
                     KnowledgeId = m.Id,
                     KnowledgeName = m.Title,
-                    HyperLink = m.Text,
+                    Hyperlink = m.Text,
                     CreateTime  = TimeStampConvertHelper.ConvertToTimeStamp(m.CreatedTime),
                     UploaderName = u.Nickname
                 }).ToList();
@@ -480,7 +480,7 @@ namespace MeshBackend.Controllers
             return MemoResult(new MemoInfo()
             {
                 CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(knowledge.CreatedTime),
-                HyperLink = knowledge.Text,
+                Hyperlink = knowledge.Text,
                 KnowledgeId = knowledge.Id,
                 KnowledgeName = knowledge.Title,
                 UploaderName = uploader
@@ -552,7 +552,7 @@ namespace MeshBackend.Controllers
             return MemoResult(new MemoInfo()
             {
                 CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(knowledge.CreatedTime),
-                HyperLink = knowledge.Text,
+                Hyperlink = knowledge.Text,
                 KnowledgeId = knowledge.Id,
                 KnowledgeName = knowledge.Title,
                 UploaderName = uploader

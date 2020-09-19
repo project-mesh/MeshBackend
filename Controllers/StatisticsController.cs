@@ -34,16 +34,6 @@ namespace MeshBackend.Controllers
             return HttpContext.Session.GetString(username) == null ? JsonReturnHelper.ErrorReturn(2, "User status error.") : null;
         }
 
-        public int GetAgeByBirthday(DateTime birthday)
-        {
-            var now = DateTime.Now;
-            var age = DateTime.Now.Year - birthday.Year;
-            if ((now.Month < birthday.Month) || (now.Month == birthday.Month && now.Day < birthday.Day))
-            {
-                --age;
-            }
-            return age >= 0 ? age : 0;
-        }
 
         public class UserCountInfo
         {
@@ -105,7 +95,7 @@ namespace MeshBackend.Controllers
 
             foreach (var u in users)
             {
-                var age = GetAgeByBirthday(u.Birthday);
+                var age = AgeGetter.GetAgeByBirthday(u.Birthday);
                 try
                 {
                     var userAge = userAgeList.Find(a => a.Age == age);

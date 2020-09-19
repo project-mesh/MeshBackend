@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 
@@ -66,5 +67,20 @@ namespace MeshBackend.Helpers
         public string CreateTIme { get; set; }
         
     }
-    
+
+    public static class AgeGetter
+    {
+        public static int GetAgeByBirthday(DateTime birthday)
+        {
+            var now = DateTime.Now;
+            var age = DateTime.Now.Year - birthday.Year;
+            if ((now.Month < birthday.Month) || (now.Month == birthday.Month && now.Day < birthday.Day))
+            {
+                --age;
+            }
+            return age >= 0 ? age : 0;
+        }
+
+    }
+
 }

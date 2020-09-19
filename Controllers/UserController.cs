@@ -152,7 +152,7 @@ namespace MeshBackend.Controllers
                 RevealedPreference = "card",
                 Address = "xx yy zz",
                 Gender = 0,
-                Status = 2
+                Status = 3
             };
             //try to save the user
             try

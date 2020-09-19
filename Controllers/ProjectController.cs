@@ -330,6 +330,13 @@ namespace MeshBackend.Controllers
                 return JsonReturnHelper.ErrorReturn(701, "Permission denied.");
             }
 
+            var develop =
+                _meshContext.Develops.FirstOrDefault(d => d.UserId == inviteUser.Id && d.ProjectId == project.Id);
+            if (develop != null)
+            {
+                return JsonReturnHelper.ErrorReturn(709, "InviteUser is already in the project.");
+            }
+            
             try
             {
                 _meshContext.Develops.Add(new Develop()

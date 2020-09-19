@@ -83,9 +83,9 @@ namespace MeshBackend.Controllers
                 .Where(b => b.ProjectId == projectId)
                 .Join(_meshContext.Bulletins, bb => bb.Id, b => b.BoardId, (bb, b) => new
                 {
-                    Id = b.Id,
-                    Name = b.Title,
-                    Content = b.Content,
+                    BulletinId = b.Id,
+                    BulletinName = b.Title,
+                    Description = b.Content,
                     BoardId = b.BoardId,
                     CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(b.CreatedTime)
                 }).ToList();
@@ -198,18 +198,21 @@ namespace MeshBackend.Controllers
             }
 
             return Json(new
+            {
+                err_code = 0,
+                data = new
                 {
-                    err_code = 0,
                     isSuccess = true,
                     msg = "",
                     bulletin = new
                     {
                         bulletinId = newBulletin.Id,
-                        bullentinName = newBulletin.Title,
+                        bulletinName = newBulletin.Title,
                         description = newBulletin.Content,
                         createTime = TimeStampConvertHelper.ConvertToTimeStamp(newBulletin.CreatedTime)
                     }
-                });
+                }
+            });
         }
 
         [HttpDelete]
@@ -328,13 +331,17 @@ namespace MeshBackend.Controllers
             return Json(new
             {
                 err_code = 0,
-                masg = "",
                 data = new
                 {
-                    bulletinId = bulletin.Id,
-                    bulletinName = bulletin.Title,
-                    description = bulletin.Content,
-                    createTime = TimeStampConvertHelper.ConvertToTimeStamp(bulletin.CreatedTime)
+                    isSuccess = true,
+                    masg = "",
+                    bulletin = new
+                    {
+                        bulletinId = bulletin.Id,
+                        bulletinName = bulletin.Title,
+                        description = bulletin.Content,
+                        createTime = TimeStampConvertHelper.ConvertToTimeStamp(bulletin.CreatedTime)
+                    }
                 }
             });
         }

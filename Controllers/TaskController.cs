@@ -305,11 +305,11 @@ namespace MeshBackend.Controllers
                 CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(task.CreatedTime),
                 Description = task.Description,
                 Deadline = task.EndTime.ToString("yyyy-MM-dd"),
-                Founder = user.Nickname,
+                Founder = user.Email,
                 TaskId = task.Id,
                 Priority = task.Priority,
                 isFinished = task.Finished,
-                Principal = principalUser.Nickname,
+                Principal = principalUser.Email,
                 Status = GetStatus(task.EndTime,task.Finished),
                 SubTasks = new List<SubTaskInfo>()
             });
@@ -460,13 +460,13 @@ namespace MeshBackend.Controllers
                 CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(task.CreatedTime),
                 Description = task.Description,
                 Deadline = task.EndTime.ToString("yyyy-MM-dd"),
-                Founder = founder.Nickname,
+                Founder = founder.Email,
                 TaskName = task.Name,
                 isFinished = task.Finished,
                 Status = GetStatus(task.EndTime,task.Finished),
-                Principal = principalUser.Nickname,
+                Principal = principalUser.Email,
                 Priority = task.Priority,
-                SubTasks = GetSubTasks(task.Id,founder.Nickname)
+                SubTasks = GetSubTasks(task.Id,founder.Email)
             });
         }
 
@@ -570,7 +570,7 @@ namespace MeshBackend.Controllers
                 TaskId = newSubTask.TaskId,
                 CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(newSubTask.CreatedTime),
                 Description = newSubTask.Description,
-                Founder = user.Nickname,
+                Founder = user.Email,
                 TaskName = newSubTask.Title,
                 isFinished = newSubTask.Finished,
                 Status = GetStatus(task.EndTime,newSubTask.Finished),
@@ -742,7 +742,7 @@ namespace MeshBackend.Controllers
                 {
                     CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(subTask.CreatedTime),
                     Description = subTask.Description,
-                    Founder = user.Nickname,
+                    Founder = user.Email,
                     TaskId = subTask.TaskId,
                     TaskName = subTask.Title,
                     isFinished = subTask.Finished,
@@ -789,11 +789,11 @@ namespace MeshBackend.Controllers
                     CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(s.CreatedTime),
                     Description = s.Description,
                     Deadline = s.EndTime.ToString("yyyy-MM-dd"),
-                    Founder = founder.Nickname,
+                    Founder = founder.Email,
                     isFinished = s.Finished,
                     TaskName = s.Name,
                     Priority = s.Priority,
-                    Principal = _meshContext.Users.First(u=>u.Id==s.LeaderId).Nickname,
+                    Principal = _meshContext.Users.First(u=>u.Id==s.LeaderId).Email,
                     SubTasks = _meshContext.Subtasks
                         .Where(b => b.TaskId == s.Id)
                         .Select(e => new SubTaskInfo()
@@ -803,7 +803,7 @@ namespace MeshBackend.Controllers
                             CreateTime = TimeStampConvertHelper.ConvertToTimeStamp(e.CreatedTime),
                             Description = e.Description,
                             isFinished = e.Finished,
-                            Founder = founder.Nickname,
+                            Founder = founder.Email,
                             Principal = _meshContext.Assigns
                                 .Where(a => a.TaskId == e.TaskId && a.Title == e.Title)
                                 .Join(_meshContext.Users, n => n.UserId, u => u.Id, (n, u) => u.Email)
@@ -871,7 +871,7 @@ namespace MeshBackend.Controllers
                 })
                 .Join(_meshContext.Users, pp => pp.t.projectAdminId, u => u.Id, (t, u) => new
                 {
-                    Founder = u.Nickname,
+                    Founder = u.Email,
                     task = t.s,
                     projectId = t.t.projectId,
                     projectName = t.t.projectName
@@ -887,7 +887,7 @@ namespace MeshBackend.Controllers
                     Founder = m.Founder,
                     TaskName = m.task.Name,
                     IsFinished = m.task.Finished,
-                    Principal = _meshContext.Users.First(u => u.Id == m.task.LeaderId).Nickname,
+                    Principal = _meshContext.Users.First(u => u.Id == m.task.LeaderId).Email,
                     Priority = m.task.Priority
                 })
                 .ToList();

@@ -214,8 +214,8 @@ namespace MeshBackend.Controllers
             var usersAccordingToDescription = _meshContext.Users
                 .Where(u => u.Description.Contains(keyword));
             var usersUnion = usersAccordingToUsername
-                .Union(usersAccordingToNickname)
-                .Union(usersAccordingToDescription)
+                .Union(usersAccordingToNickname).Distinct()
+                .Union(usersAccordingToDescription).Distinct()
                 .ToList();
 
             var users = new List<UserInfo>();
@@ -242,7 +242,7 @@ namespace MeshBackend.Controllers
                     username = u.Email,
                     address = u.Address,
                     avatar = AvatarSaveHelper.GetObject(u.Avatar),
-                    birthday = u.Birthday.ToString(),
+                    birthday = u.Birthday.ToString("yyyy-MM-dd"),
                     description = u.Description,
                     preference = new UserPreference()
                     {

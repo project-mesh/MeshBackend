@@ -309,6 +309,34 @@ namespace MeshBackend.Controllers
 
         }
 
+        [HttpPost]
+        [Route("logout")]
+        public JsonResult Logout(UserRequest request)
+        {
+            if (!CornerCaseCheckHelper.Check(request.username, 50, CornerCaseCheckHelper.Username))
+            {
+                return JsonReturnHelper.ErrorReturn(104, "Invalid username.");
+            }
+            
+            if (HttpContext.Session.IsAvailable && HttpContext.Session.GetString(request.username) == null)
+            {
+                return JsonReturnHelper.ErrorReturn(2, "User status error.");
+            }
+
+            try
+            {
+                HttpContext.Session.Remove(request.username);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return JsonReturnHelper.ErrorReturn(1, "Unexpected error.");
+            }
+
+            return JsonReturnHelper.SuccessReturn();
+
+        }
+
         [HttpGet]
         [Route("user")]
         public JsonResult QueryUser(string username, string keyword)

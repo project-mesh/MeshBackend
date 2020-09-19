@@ -13,7 +13,7 @@ namespace MeshBackend.Helpers
                     err_code = code ,
                     data = new
                     {
-                        isScuess = false,
+                        isSuccess = false,
                         msg = msg
                     }
                 });
